@@ -1,0 +1,2 @@
+//env file should not be pushed to git
+.env
