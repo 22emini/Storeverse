@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Storeverse Auth Sandbox</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --bg-gradient: radial-gradient(circle at top right, #1e1b4b 0%, #0f172a 100%);
+        --card-bg: rgba(30, 41, 59, 0.45);
+        --card-border: rgba(255, 255, 255, 0.08);
+        --accent-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        --text-primary: #f8fafc;
+        --text-secondary: #94a3b8;
+      }
+
+      body {
+        font-family: 'Outfit', sans-serif;
+        background: var(--bg-gradient);
+        color: var(--text-primary);
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem;
+        min-height: 100vh;
+        box-sizing: border-box;
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 3.5rem;
+      }
+
+      h1 {
+        font-size: 2.8rem;
+        font-weight: 800;
+        margin: 0 0 0.5rem 0;
+        letter-spacing: -1px;
+        background: linear-gradient(135deg, #e2e8f0 0%, #94a3b8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .subtitle {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+        font-weight: 400;
+      }
+
+      .card {
+        background: var(--card-bg);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 2.2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25);
+        border-color: rgba(255, 255, 255, 0.12);
+      }
+
+      h3 {
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        font-size: 1.4rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        color: #e2e8f0;
+      }
+
+      .badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.6rem;
+        border-radius: 20px;
+        background: var(--accent-gradient);
+        color: #fff;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1.2rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+
+      label {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      input, select {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        color: var(--text-primary);
+        font-family: inherit;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+      }
+
+      input:focus, select:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+        background: rgba(15, 23, 42, 0.8);
+      }
+
+      .btn-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.8rem;
+        margin-top: 1rem;
+      }
+
+      button {
+        padding: 0.8rem 1.6rem;
+        border: none;
+        border-radius: 10px;
+        font-family: inherit;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+
+      .btn-primary {
+        background: var(--accent-gradient);
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+      }
+
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.08);
+        color: #e2e8f0;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+      }
+
+      .btn-success {
+        background: var(--success-gradient);
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      }
+
+      .btn-success:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+      }
+
+      .response-card {
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      pre {
+        white-space: pre-wrap;
+        word-break: break-all;
+        background: #090d16;
+        color: #38bdf8;
+        padding: 1.2rem;
+        border-radius: 12px;
+        min-height: 100px;
+        margin: 0;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.9rem;
+        border: 1px solid rgba(56, 189, 248, 0.15);
+      }
+
+      .notification {
+        background: rgba(99, 102, 241, 0.15);
+        border-left: 4px solid #6366f1;
+        padding: 1rem;
+        border-radius: 4px;
+        margin-bottom: 1.5rem;
+        display: none;
+        font-size: 0.95rem;
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Storeverse Authentication</h1>
+      <div class="subtitle">Revamped Verification & Registration Sandbox Interface</div>
+    </header>
+
+    <div id="noticeBox" class="notification"></div>
+
+    <!-- STEP 1: VERIFICATION REQUEST -->
+    <div class="card" id="step1Card">
+      <h3>
+        <span class="badge">Step 1</span>
+        Initiate Email Verification
+      </h3>
+      <p style="color: var(--text-secondary); font-size: 0.95rem; margin-top: -0.8rem; margin-bottom: 1.5rem;">
+        Enter your email to request a verification link. A temporary pending account will be created.
+      </p>
+      <div class="grid">
+        <div class="field">
+          <label for="email">Email Address</label>
+          <input id="email" type="email" placeholder="enter-your-email@example.com" />
+        </div>
+      </div>
+      <div class="btn-group">
+        <button id="sendLinkBtn" class="btn-primary">Send Verification Link</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: SIMULATE LINK CLICK / VERIFY -->
+    <div class="card" id="step2Card">
+      <h3>
+        <span class="badge">Step 2</span>
+        Simulate/Verify Link
+      </h3>
+      <p style="color: var(--text-secondary); font-size: 0.95rem; margin-top: -0.8rem; margin-bottom: 1.5rem;">
+        Verify the email token or simulate a browser email link click.
+      </p>
+      <div class="grid">
+        <div class="field">
+          <label for="verifyEmail">Email Address</label>
+          <input id="verifyEmail" type="email" placeholder="enter-your-email@example.com" />
+        </div>
+        <div class="field">
+          <label for="verifyToken">Verification Token</label>
+          <input id="verifyToken" placeholder="Paste the 64-char hex token here" />
+        </div>
+      </div>
+      <div class="btn-group">
+        <button id="simulateBtn" class="btn-success">Simulate Link Click (Browser Open)</button>
+        <button id="verifyTokenBtn" class="btn-secondary">Verify via API (POST)</button>
+        <button id="resendBtn" class="btn-secondary">Resend Verification Link</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: COMPLETE REGISTRATION -->
+    <div class="card" id="step3Card">
+      <h3>
+        <span class="badge">Step 3</span>
+        Complete Registration
+      </h3>
+      <p style="color: var(--text-secondary); font-size: 0.95rem; margin-top: -0.8rem; margin-bottom: 1.5rem;">
+        Finalize your profile details. This will succeed ONLY if your email has been verified.
+      </p>
+      <div class="grid">
+        <div class="field">
+          <label for="regEmail">Email Address</label>
+          <input id="regEmail" type="email" placeholder="Pre-filled on verification" />
+        </div>
+        <div class="field">
+          <label for="regToken">Verification Token</label>
+          <input id="regToken" placeholder="Pre-filled on verification" />
+        </div>
+        <div class="field">
+          <label for="regName">Full Name</label>
+          <input id="regName" placeholder="John Doe" />
+        </div>
+        <div class="field">
+          <label for="regPassword">Password</label>
+          <input id="regPassword" type="password" placeholder="Choose a strong password" />
+        </div>
+        <div class="field">
+          <label for="regPhone">Phone Number</label>
+          <input id="regPhone" placeholder="+15550199" />
+        </div>
+        <div class="field">
+          <label for="regStore">Store Name</label>
+          <input id="regStore" placeholder="John's Tech Universe" />
+        </div>
+        <div class="field">
+          <label for="regCategory">Store Category</label>
+          <select id="regCategory">
+            <option value="">Select Category</option>
+            <option value="Electronics & Gadgets">Electronics & Gadgets</option>
+            <option value="Fashion & Apparel">Fashion & Apparel</option>
+            <option value="Food & Bakery">Food & Bakery</option>
+            <option value="Home & Gardening">Home & Gardening</option>
+            <option value="Beauty & Cosmetics">Beauty & Cosmetics</option>
+            <option value="Sports & Fitness">Sports & Fitness</option>
+            <option value="Books & Stationery">Books & Stationery</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-group">
+        <button id="completeBtn" class="btn-primary">Complete Account Creation</button>
+      </div>
+    </div>
+
+    <!-- RESPONSE OUTPUT -->
+    <div class="card response-card">
+      <h3 style="color: #38bdf8;">API Response Console</h3>
+      <pre id="output">Sandbox ready. Execute a step to view API interactions here.</pre>
+    </div>
+
+    <script>
+      const API =
+        window.location.port === "5000"
+          ? "/api/auth"
+          : "http://localhost:5000/api/auth";
+      
+      const output = document.getElementById("output");
+      const noticeBox = document.getElementById("noticeBox");
+
+      function showResponse(data) {
+        output.textContent = typeof data === "string" ? data : JSON.stringify(data, null, 2);
+      }
+
+      function showNotice(msg, isSuccess = true) {
+        noticeBox.style.display = "block";
+        noticeBox.textContent = msg;
+        noticeBox.style.background = isSuccess ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)";
+        noticeBox.style.borderLeftColor = isSuccess ? "#10b981" : "#ef4444";
+      }
+
+      // Check URL parameters for verified redirection (automatic pre-filling)
+      window.addEventListener("DOMContentLoaded", () => {
+        const params = new URLSearchParams(window.location.search);
+        const email = params.get("email");
+        const token = params.get("token");
+
+        if (email && token) {
+          document.getElementById("verifyEmail").value = email;
+          document.getElementById("verifyToken").value = token;
+          document.getElementById("regEmail").value = email;
+          document.getElementById("regToken").value = token;
+
+          showNotice("🎉 Email verified successfully! Please complete the form below to finalize your registration.");
+          document.getElementById("step3Card").scrollIntoView({ behavior: "smooth" });
+        }
+      });
+
+      // Fetch helper
+      async function makeRequest(url, method, body) {
+        try {
+          const options = {
+            method,
+            headers: { "Content-Type": "application/json" }
+          };
+          if (body) {
+            options.body = JSON.stringify(body);
+          }
+
+          const res = await fetch(`${API}${url}`, options);
+          const raw = await res.text();
+          let parsed;
+          try {
+            parsed = JSON.parse(raw);
+          } catch {
+            parsed = raw;
+          }
+
+          showResponse({
+            endpoint: `${method} ${url}`,
+            status: res.status,
+            ok: res.ok,
+            response: parsed
+          });
+
+          return { ok: res.ok, data: parsed };
+        } catch (err) {
+          showResponse(`Network Request Failed: ${err.message}`);
+          return { ok: false, error: err.message };
+        }
+      }
+
+      // STEP 1: Request Verification Link
+      document.getElementById("sendLinkBtn").addEventListener("click", async () => {
+        const email = document.getElementById("email").value.trim();
+        if (!email) {
+          showNotice("Please enter an email address to send a link.", false);
+          return;
+        }
+
+        const res = await makeRequest("/register", "POST", { email });
+        if (res.ok) {
+          showNotice(`Verification link sent to ${email}! View console or sandbox logs.`);
+          document.getElementById("verifyEmail").value = email;
+          document.getElementById("regEmail").value = email;
+        } else {
+          showNotice(res.data?.message || "Verification request failed", false);
+        }
+      });
+
+      // STEP 2: Verify Token via API
+      document.getElementById("verifyTokenBtn").addEventListener("click", async () => {
+        const email = document.getElementById("verifyEmail").value.trim();
+        const token = document.getElementById("verifyToken").value.trim();
+
+        if (!token) {
+          showNotice("Verification token is required.", false);
+          return;
+        }
+
+        const res = await makeRequest("/verify-email", "POST", { email, token });
+        if (res.ok) {
+          showNotice("Email verified successfully! You can now proceed to Step 3.");
+          document.getElementById("regEmail").value = email;
+          document.getElementById("regToken").value = token;
+        } else {
+          showNotice(res.data?.message || "Token verification failed.", false);
+        }
+      });
+
+      // STEP 2: Simulate Browser Click
+      document.getElementById("simulateBtn").addEventListener("click", () => {
+        const token = document.getElementById("verifyToken").value.trim();
+        if (!token) {
+          showNotice("Please enter a verification token to simulate clicking the link.", false);
+          return;
+        }
+        
+        // Open the GET verify link directly
+        const url = `${API}/verify-email?token=${encodeURIComponent(token)}`;
+        window.open(url, "_blank");
+      });
+
+      // STEP 2: Resend Verification Link
+      document.getElementById("resendBtn").addEventListener("click", async () => {
+        const email = document.getElementById("verifyEmail").value.trim();
+        if (!email) {
+          showNotice("Please enter the email address to resend the link.", false);
+          return;
+        }
+
+        const res = await makeRequest("/resend-verification", "POST", { email });
+        if (res.ok) {
+          showNotice(`A fresh verification link has been sent to ${email}.`);
+        } else {
+          showNotice(res.data?.message || "Failed to resend verification.", false);
+        }
+      });
+
+      // STEP 3: Complete Registration
+      document.getElementById("completeBtn").addEventListener("click", async () => {
+        const email = document.getElementById("regEmail").value.trim();
+        const token = document.getElementById("regToken").value.trim();
+        const name = document.getElementById("regName").value.trim();
+     
+        const password = document.getElementById("regPassword").value.trim();
+        const phoneNumber = document.getElementById("regPhone").value.trim();
+        const storeName = document.getElementById("regStore").value.trim();
+        const category = document.getElementById("regCategory").value;
+
+        if (!email || !token) {
+          showNotice("Email and verification token are required. Complete Step 2 first.", false);
+          return;
+        }
+        if (!name || !password) {
+          showNotice("Full Name and Password are required.", false);
+          return;
+        }
+
+        const payload = {
+          email,
+          token,
+          name,
+   
+          password,
+          phoneNumber: phoneNumber || undefined,
+          storeName: storeName || undefined,
+          category: category || undefined
+        };
+
+        const res = await makeRequest("/complete-registration", "POST", payload);
+        if (res.ok) {
+          showNotice("🎉 Account created and profile completed successfully!");
+        } else {
+          showNotice(res.data?.message || "Profile completion failed.", false);
+        }
+      });
+    </script>
+  </body>
+</html>

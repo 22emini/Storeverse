@@ -1,0 +1,79 @@
+[
+  {
+    "name": "Jane Boutique",
+    "username": "jane_boutique",
+    "email": "jane@storeverse.com",
+    "password": "Password123!",
+    "phoneNumber": "+15550101",
+    "storeName": "Luxe Apparel",
+    "category": "Fashion & Apparel"
+  },
+  {
+    "name": "John Tech",
+    "username": "john_tech",
+    "email": "john@storeverse.com",
+    "password": "TechPassword987",
+    "phoneNumber": "+15550202",
+    "storeName": "TechVerse Solutions",
+    "category": "Electronics & Gadgets"
+  },
+  {
+    "name": "Alice Cooper",
+    "username": "alice_sweet_treats",
+    "email": "alice@storeverse.com",
+    "password": "BakingSweet!456",
+    "phoneNumber": "+15550303",
+    "storeName": "Sweet Delights Bakery",
+    "category": "Food & Bakery"
+  },
+  {
+    "name": "David Green",
+    "username": "david_green",
+    "email": "david@storeverse.com",
+    "password": "PlantLife$321",
+    "phoneNumber": "+15550404",
+    "storeName": "The Urban Jungle",
+    "category": "Home & Gardening"
+  },
+  {
+    "name": "Sophia Glam",
+    "username": "sophia_glam",
+    "email": "sophia@storeverse.com",
+    "password": "BeautySecret#888",
+    "phoneNumber": "+15550505",
+    "storeName": "Aura Cosmetics",
+    "category": "Beauty & Cosmetics"
+  },
+  {
+    "name": "Marcus Fit",
+    "username": "marcus_fit",
+    "email": "marcus@storeverse.com",
+    "password": "StrongerEveryDay!",
+    "phoneNumber": "+15550606",
+    "storeName": "Apex Athletics",
+    "category": "Sports & Fitness"
+  },
+  {
+    "name": "Elena Books",
+    "username": "elena_books",
+    "email": "elena@storeverse.com",
+    "password": "ReadMoreBooks2026",
+    "phoneNumber": "+15550707",
+    "storeName": "The Cozy Nook",
+    "category": "Books & Stationery"
+  },
+  {
+    "name": "Bob Miller",
+    "username": "bob_miller",
+    "email": "bob@storeverse.com",
+    "password": "SimplePassword111",
+    "phoneNumber": "+15550808",
+    "storeName": null,
+    "category": null
+  },
+  {
+    "email": "akinrinadee8006@student.babcock.edu.ng",
+    "password": "111"
+  }
+  
+]

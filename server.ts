@@ -17,6 +17,7 @@ const API = process.env.API;
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.static('public'));
 
 // Basic Route
 app.get('/', (req: Request, res: Response) => {
@@ -26,7 +27,7 @@ app.get('/', (req: Request, res: Response) => {
 // Database version test route
 // app.get('/db-version', requestHandler);
 
-app.use(`/${API}/auth`, AuthRoute);
+app.use(`/api/auth`, AuthRoute);
 
 // Error Handling Middleware for JSON parsing errors
 app.use((err: any, req: Request, res: Response, next: NextFunction): any => {

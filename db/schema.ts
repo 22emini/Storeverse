@@ -1,16 +1,28 @@
-// This is the Drizzle ORM Schema for Neon Database
-import { pgTable, serial, text, varchar, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, varchar, timestamp, boolean } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
-  id: serial('id').primaryKey(),
-  name: varchar('name', { length: 255 }).notNull(),
-  username: varchar('username', { length: 255 }).unique(),
-  email: varchar('email', { length: 255 }).notNull().unique(),
-  password: text('password').notNull(), 
+  // --- Identity ---
+  id:          serial('id').primaryKey(),
+  name:        varchar('name', { length: 255 }),
+  email:       varchar('email', { length: 255 }).notNull().unique(),
+  password:    text('password'),
   phoneNumber: varchar('phone_number', { length: 15 }).unique(),
+
+  // --- Store Info ---
   storeName: varchar('store_name', { length: 255 }),
-  category: varchar('category', { length: 255 }),
+  category:  varchar('category', { length: 255 }),
+
+  // --- Email Verification ---
+  emailVerified:     boolean('email_verified').default(false).notNull(),
+  emailVerifyCode:   varchar('email_verify_code', { length: 255 }),
+  emailVerifyExpiry: timestamp('email_verify_expiry'),
+
+  // --- Phone Verification ---
+  phoneVerified:     boolean('phone_verified').default(false).notNull(),
+  phoneVerifyCode:   varchar('phone_verify_code', { length: 6 }),
+  phoneVerifyExpiry: timestamp('phone_verify_expiry'),
+
+  // --- Timestamps ---
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
-
