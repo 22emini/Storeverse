@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.completeRegistration = exports.resendVerificationCode = exports.verifyEmail = exports.UpdateUserInfo = exports.fetchUserId = exports.login = exports.register = void 0;
+exports.completeRegistration = exports.resendVerificationCode = exports.verifyEmail = exports.UpdateUserInfo = exports.fetchUserId = exports.resendLoginOtp = exports.verifyLoginOtp = exports.login = exports.register = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const crypto_1 = __importDefault(require("crypto"));
@@ -11,6 +11,22 @@ const dbConnect_1 = require("../config/dbConnect");
 const schema_1 = require("../db/schema");
 const drizzle_orm_1 = require("drizzle-orm");
 const mailer_1 = require("../utils/mailer");
+const JWT_SECRET = process.env.JWT_SECRET || 'storeverse_secret_key_2026';
+const LOGIN_OTP_TTL_MS = 10 * 60 * 1000; // 10 minutes
+const generateLoginOtp = () => crypto_1.default.randomInt(100000, 1000000).toString();
+const createLoginTempToken = (userId) => jsonwebtoken_1.default.sign({ userId, purpose: 'login_2fa' }, JWT_SECRET, { expiresIn: '10m' });
+const verifyLoginTempToken = (tempToken) => {
+    try {
+        const decoded = jsonwebtoken_1.default.verify(tempToken, JWT_SECRET);
+        if (decoded.purpose !== 'login_2fa' || typeof decoded.userId !== 'number') {
+            return null;
+        }
+        return { userId: decoded.userId };
+    }
+    catch {
+        return null;
+    }
+};
 // Register (Initiate email verification)
 const register = async (req, res) => {
     try {
@@ -80,27 +96,17 @@ const register = async (req, res) => {
     }
 };
 exports.register = register;
-// Login controller
+// Login controller 
+// working ok 
 const login = async (req, res) => {
-    const { username, password } = req.body;
-    if (!username || !password) {
-        return res.status(400).json({ message: 'Username/Email and password are required' });
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ message: 'Email and password are required' });
     }
     try {
-        // Support login via either username or email
-        let userResult;
-        if (username.includes('@')) {
-            userResult = await dbConnect_1.db.select().from(schema_1.users).where((0, drizzle_orm_1.eq)(schema_1.users.email, username)).limit(1);
-        }
-        else {
-            userResult = await dbConnect_1.db.select().from(schema_1.users).where((0, drizzle_orm_1.eq)(schema_1.users.username, username)).limit(1);
-        }
-        // Fallback in case they didn't set a username but typed username as email or vice versa
+        const userResult = await dbConnect_1.db.select().from(schema_1.users).where((0, drizzle_orm_1.eq)(schema_1.users.email, email)).limit(1);
         if (userResult.length === 0) {
-            userResult = await dbConnect_1.db.select().from(schema_1.users).where((0, drizzle_orm_1.eq)(schema_1.users.email, username)).limit(1);
-        }
-        if (userResult.length === 0) {
-            return res.status(404).json({ message: `Invalid username/email or password` });
+            return res.status(404).json({ message: 'Invalid email or password' });
         }
         const user = userResult[0];
         if (!user.password) {
@@ -108,22 +114,34 @@ const login = async (req, res) => {
         }
         const isMatch = await bcrypt_1.default.compare(password, user.password);
         if (!isMatch) {
-            return res.status(404).json({ message: `Invalid username/email or password` });
+            return res.status(404).json({ message: 'Invalid email or password' });
         }
-        const jwtSecret = process.env.JWT_SECRET || 'storeverse_secret_key_2026';
-        const token = jsonwebtoken_1.default.sign({ userId: user.id }, jwtSecret, { expiresIn: '1h' });
+        const otp = generateLoginOtp();
+        const otpHash = await bcrypt_1.default.hash(otp, 10);
+        const otpExpiry = new Date(Date.now() + LOGIN_OTP_TTL_MS);
+        await dbConnect_1.db.update(schema_1.users)
+            .set({
+            loginOtpCode: otpHash,
+            loginOtpExpiry: otpExpiry,
+            updatedAt: new Date(),
+        })
+            .where((0, drizzle_orm_1.eq)(schema_1.users.id, user.id));
+        const tempToken = createLoginTempToken(user.id);
+        (0, mailer_1.sendLoginOtpEmail)(email, user.name || email.split('@')[0], otp).catch(err => {
+            console.error('Failed to send login OTP email:', err);
+        });
         res.status(200).json({
-            message: 'Login successful',
-            token,
+            message: 'Verification code sent to your email. Enter the OTP to complete login.',
+            requiresOtp: true,
+            tempToken,
             user: {
                 id: user.id,
                 name: user.name,
-                username: user.username,
                 email: user.email,
-                emailVerified: user.emailVerified
-            }
+                emailVerified: user.emailVerified,
+            },
         });
-        console.log("Successfully logged in user");
+        console.log(`Login OTP initiated for user ID: ${user.id}`);
     }
     catch (err) {
         console.error("Login error:", err);
@@ -131,6 +149,102 @@ const login = async (req, res) => {
     }
 };
 exports.login = login;
+// Verify login OTP (2FA step 2)
+const verifyLoginOtp = async (req, res) => {
+    const { tempToken, otp } = req.body;
+    if (!tempToken || !otp) {
+        return res.status(400).json({ message: 'Temporary session token and OTP are required' });
+    }
+    const session = verifyLoginTempToken(tempToken);
+    if (!session) {
+        return res.status(401).json({ message: 'Invalid or expired login session. Please sign in again.' });
+    }
+    try {
+        const userResult = await dbConnect_1.db.select().from(schema_1.users).where((0, drizzle_orm_1.eq)(schema_1.users.id, session.userId)).limit(1);
+        if (userResult.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        const user = userResult[0];
+        if (!user.loginOtpCode || !user.loginOtpExpiry) {
+            return res.status(400).json({ message: 'No pending verification code. Please sign in again.' });
+        }
+        if (new Date() > user.loginOtpExpiry) {
+            await dbConnect_1.db.update(schema_1.users)
+                .set({ loginOtpCode: null, loginOtpExpiry: null, updatedAt: new Date() })
+                .where((0, drizzle_orm_1.eq)(schema_1.users.id, user.id));
+            return res.status(400).json({ message: 'Verification code has expired. Please sign in again.' });
+        }
+        const otpString = String(otp).trim();
+        const isOtpValid = await bcrypt_1.default.compare(otpString, user.loginOtpCode);
+        if (!isOtpValid) {
+            return res.status(401).json({ message: 'Invalid verification code' });
+        }
+        await dbConnect_1.db.update(schema_1.users)
+            .set({
+            loginOtpCode: null,
+            loginOtpExpiry: null,
+            updatedAt: new Date(),
+        })
+            .where((0, drizzle_orm_1.eq)(schema_1.users.id, user.id));
+        const token = jsonwebtoken_1.default.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
+        res.status(200).json({
+            message: 'Login successful',
+            token,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                emailVerified: user.emailVerified,
+            },
+        });
+        console.log(`Successfully verified login OTP for user ID: ${user.id}`);
+    }
+    catch (err) {
+        console.error('Verify login OTP error:', err);
+        res.status(500).json({ message: 'OTP verification failed', error: err.message });
+    }
+};
+exports.verifyLoginOtp = verifyLoginOtp;
+// Resend login OTP during 2FA flow
+const resendLoginOtp = async (req, res) => {
+    const { tempToken } = req.body;
+    if (!tempToken) {
+        return res.status(400).json({ message: 'Temporary session token is required' });
+    }
+    const session = verifyLoginTempToken(tempToken);
+    if (!session) {
+        return res.status(401).json({ message: 'Invalid or expired login session. Please sign in again.' });
+    }
+    try {
+        const userResult = await dbConnect_1.db.select().from(schema_1.users).where((0, drizzle_orm_1.eq)(schema_1.users.id, session.userId)).limit(1);
+        if (userResult.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        const user = userResult[0];
+        const otp = generateLoginOtp();
+        const otpHash = await bcrypt_1.default.hash(otp, 10);
+        const otpExpiry = new Date(Date.now() + LOGIN_OTP_TTL_MS);
+        await dbConnect_1.db.update(schema_1.users)
+            .set({
+            loginOtpCode: otpHash,
+            loginOtpExpiry: otpExpiry,
+            updatedAt: new Date(),
+        })
+            .where((0, drizzle_orm_1.eq)(schema_1.users.id, user.id));
+        (0, mailer_1.sendLoginOtpEmail)(user.email, user.name || user.email.split('@')[0], otp).catch(err => {
+            console.error('Failed to resend login OTP email:', err);
+        });
+        res.status(200).json({
+            message: `A new verification code has been sent to ${user.email}.`,
+        });
+        console.log(`Resent login OTP for user ID: ${user.id}`);
+    }
+    catch (err) {
+        console.error('Resend login OTP error:', err);
+        res.status(500).json({ message: 'Failed to resend verification code', error: err.message });
+    }
+};
+exports.resendLoginOtp = resendLoginOtp;
 // Fetch User Info by ID
 const fetchUserId = async (req, res) => {
     const { id } = req.params;
@@ -172,7 +286,7 @@ const UpdateUserInfo = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
         const updateData = {};
-        const allowedFields = ['name', 'username', 'email', 'phoneNumber', 'storeName', 'category'];
+        const allowedFields = ['name', 'email', 'phoneNumber', 'storeName', 'category'];
         for (const key of allowedFields) {
             if (req.body[key] !== undefined) {
                 updateData[key] = req.body[key];
@@ -404,7 +518,7 @@ exports.resendVerificationCode = resendVerificationCode;
 // Complete registration (Finalize profile after verification)
 const completeRegistration = async (req, res) => {
     try {
-        const { email, token, name, username, password, phoneNumber, storeName, category } = req.body;
+        const { email, token, name, password, phoneNumber, storeName, category } = req.body;
         if (!email || !token || !name || !password) {
             return res.status(400).json({ message: 'Email, verification token, name, and password are required' });
         }
@@ -420,19 +534,11 @@ const completeRegistration = async (req, res) => {
         if (!user.emailVerifyCode || user.emailVerifyCode !== token) {
             return res.status(400).json({ message: 'Invalid or mismatching verification token' });
         }
-        // Check if username is already taken if provided
-        if (username) {
-            const existingUsername = await dbConnect_1.db.select().from(schema_1.users).where((0, drizzle_orm_1.eq)(schema_1.users.username, username)).limit(1);
-            if (existingUsername.length > 0 && existingUsername[0].id !== user.id) {
-                return res.status(400).json({ message: 'Username is already taken' });
-            }
-        }
         const hashedPassword = await bcrypt_1.default.hash(password, 10);
         // Update the profile fields and nullify the token
         await dbConnect_1.db.update(schema_1.users)
             .set({
             name,
-            username: username || null,
             password: hashedPassword,
             phoneNumber: phoneNumber || null,
             storeName: storeName || null,
@@ -451,7 +557,6 @@ const completeRegistration = async (req, res) => {
             user: {
                 id: user.id,
                 name,
-                username: username || null,
                 email: user.email,
                 emailVerified: true
             }

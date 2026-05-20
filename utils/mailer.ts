@@ -229,3 +229,83 @@ export const sendVerificationEmail = async (to: string, name: string, verificati
     return false;
   }
 };
+
+/**
+ * Sends a login OTP code for two-factor authentication.
+ */
+export const sendLoginOtpEmail = async (to: string, name: string, otp: string): Promise<boolean> => {
+  try {
+    const activeTransporter = await getTransporter();
+    const emailFrom = process.env.EMAIL_FROM || '"Storeverse Support" <noreply@storeverse.com>';
+
+    const mailOptions = {
+      from: emailFrom,
+      to,
+      subject: 'Your Storeverse Login Code',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Login Verification Code</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8fafc; margin: 0; padding: 0; }
+            .container { max-width: 600px; margin: 40px auto; padding: 0 20px; }
+            .card { background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0; overflow: hidden; }
+            .header { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 40px 20px; text-align: center; }
+            .header h1 { color: #ffffff; font-size: 28px; font-weight: 800; margin: 0; }
+            .content { padding: 40px 30px; }
+            .welcome-text { font-size: 16px; color: #334155; line-height: 1.6; margin-bottom: 24px; }
+            .otp-box { text-align: center; margin: 32px 0; padding: 24px; background: #f1f5f9; border-radius: 12px; }
+            .otp-code { font-size: 36px; font-weight: 800; letter-spacing: 8px; color: #4f46e5; margin: 0; }
+            .instruction { font-size: 14px; color: #64748b; margin-top: 12px; text-align: center; }
+            .info-box { background-color: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 4px; padding: 16px; margin-top: 24px; }
+            .info-text { font-size: 14px; color: #1e3a8a; line-height: 1.5; margin: 0; }
+            .footer { text-align: center; padding: 30px; background-color: #f8fafc; border-top: 1px solid #f1f5f9; }
+            .footer p { font-size: 12px; color: #94a3b8; margin: 4px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="card">
+              <div class="header"><h1>Storeverse</h1></div>
+              <div class="content">
+                <p class="welcome-text">Hi ${name},</p>
+                <p class="welcome-text">Use the verification code below to complete your login. This code expires in <strong>10 minutes</strong>.</p>
+                <div class="otp-box">
+                  <p class="otp-code">${otp}</p>
+                  <p class="instruction">Enter this code on the login verification screen.</p>
+                </div>
+                <div class="info-box">
+                  <p class="info-text"><strong>Security Notice:</strong> If you did not attempt to sign in, ignore this email and consider changing your password.</p>
+                </div>
+                <p class="welcome-text">Best regards,<br>The Storeverse Team</p>
+              </div>
+              <div class="footer">
+                <p>&copy; ${new Date().getFullYear()} Storeverse. All rights reserved.</p>
+              </div>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    };
+
+    const info = await activeTransporter.sendMail(mailOptions);
+    console.log(`✅ Login OTP email sent to: ${to}`);
+
+    const previewUrl = nodemailer.getTestMessageUrl(info);
+    if (previewUrl) {
+      console.log('------------------------------------------------------------');
+      console.log('🔗 VIEW LOGIN OTP EMAIL PREVIEW HERE:');
+      console.log(previewUrl);
+      console.log('------------------------------------------------------------');
+    }
+
+    return true;
+  } catch (error) {
+    console.error('❌ Error sending login OTP email:', error);
+    return false;
+  }
+};

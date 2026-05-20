@@ -320,6 +320,36 @@
       </div>
     </div>
 
+    <!-- STEP 4: LOGIN + 2FA OTP -->
+    <div class="card" id="loginCard">
+      <h3>
+        <span class="badge">Step 4</span>
+        Login with OTP (2FA)
+      </h3>
+      <p style="color: var(--text-secondary); font-size: 0.95rem; margin-top: -0.8rem; margin-bottom: 1.5rem;">
+        Sign in with email and password. A 6-digit code is emailed to you — check the server console for the Ethereal preview link if SMTP is not configured.
+      </p>
+      <div class="grid">
+        <div class="field">
+          <label for="loginEmail">Email Address</label>
+          <input id="loginEmail" type="email" placeholder="your-email@example.com" />
+        </div>
+        <div class="field">
+          <label for="loginPassword">Password</label>
+          <input id="loginPassword" type="password" placeholder="Your password" />
+        </div>
+        <div class="field" id="otpField" style="display: none;">
+          <label for="loginOtp">Verification Code (OTP)</label>
+          <input id="loginOtp" placeholder="6-digit code from email" maxlength="6" />
+        </div>
+      </div>
+      <div class="btn-group">
+        <button id="loginBtn" class="btn-primary">Sign In</button>
+        <button id="verifyOtpBtn" class="btn-success" style="display: none;">Verify OTP &amp; Complete Login</button>
+        <button id="resendOtpBtn" class="btn-secondary" style="display: none;">Resend OTP</button>
+      </div>
+    </div>
+
     <!-- RESPONSE OUTPUT -->
     <div class="card response-card">
       <h3 style="color: #38bdf8;">API Response Console</h3>
@@ -361,7 +391,20 @@
           showNotice("🎉 Email verified successfully! Please complete the form below to finalize your registration.");
           document.getElementById("step3Card").scrollIntoView({ behavior: "smooth" });
         }
+
+        if (window.location.hash === "#login") {
+          document.getElementById("loginCard").scrollIntoView({ behavior: "smooth" });
+        }
       });
+
+      let loginTempToken = null;
+
+      function showOtpStep() {
+        document.getElementById("otpField").style.display = "block";
+        document.getElementById("verifyOtpBtn").style.display = "inline-block";
+        document.getElementById("resendOtpBtn").style.display = "inline-block";
+        document.getElementById("loginBtn").textContent = "Request New Code";
+      }
 
       // Fetch helper
       async function makeRequest(url, method, body) {
@@ -461,6 +504,65 @@
           showNotice(`A fresh verification link has been sent to ${email}.`);
         } else {
           showNotice(res.data?.message || "Failed to resend verification.", false);
+        }
+      });
+
+      // STEP 4: Login (sends OTP)
+      document.getElementById("loginBtn").addEventListener("click", async () => {
+        const email = document.getElementById("loginEmail").value.trim();
+        const password = document.getElementById("loginPassword").value;
+
+        if (!email || !password) {
+          showNotice("Email and password are required to sign in.", false);
+          return;
+        }
+
+        const res = await makeRequest("/login", "POST", { email, password });
+        if (res.ok && res.data?.requiresOtp) {
+          loginTempToken = res.data.tempToken;
+          showOtpStep();
+          showNotice(`OTP sent to ${email}. Check your inbox or the server console for the email preview URL.`);
+        } else if (res.ok) {
+          showNotice("Logged in successfully.");
+        } else {
+          showNotice(res.data?.message || "Login failed.", false);
+        }
+      });
+
+      // STEP 4: Verify OTP
+      document.getElementById("verifyOtpBtn").addEventListener("click", async () => {
+        const otp = document.getElementById("loginOtp").value.trim();
+
+        if (!loginTempToken) {
+          showNotice("Sign in first to receive a verification code.", false);
+          return;
+        }
+        if (!otp) {
+          showNotice("Enter the 6-digit code from your email.", false);
+          return;
+        }
+
+        const res = await makeRequest("/verify-login-otp", "POST", { tempToken: loginTempToken, otp });
+        if (res.ok) {
+          showNotice("Login successful! JWT token is in the response console below.");
+          loginTempToken = null;
+        } else {
+          showNotice(res.data?.message || "OTP verification failed.", false);
+        }
+      });
+
+      // STEP 4: Resend OTP
+      document.getElementById("resendOtpBtn").addEventListener("click", async () => {
+        if (!loginTempToken) {
+          showNotice("Sign in first before resending a code.", false);
+          return;
+        }
+
+        const res = await makeRequest("/resend-login-otp", "POST", { tempToken: loginTempToken });
+        if (res.ok) {
+          showNotice("A new verification code has been sent.");
+        } else {
+          showNotice(res.data?.message || "Failed to resend OTP.", false);
         }
       });
 

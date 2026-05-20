@@ -6,7 +6,6 @@ exports.users = (0, pg_core_1.pgTable)('users', {
     // --- Identity ---
     id: (0, pg_core_1.serial)('id').primaryKey(),
     name: (0, pg_core_1.varchar)('name', { length: 255 }),
-    username: (0, pg_core_1.varchar)('username', { length: 255 }).unique(),
     email: (0, pg_core_1.varchar)('email', { length: 255 }).notNull().unique(),
     password: (0, pg_core_1.text)('password'),
     phoneNumber: (0, pg_core_1.varchar)('phone_number', { length: 15 }).unique(),
@@ -21,6 +20,9 @@ exports.users = (0, pg_core_1.pgTable)('users', {
     phoneVerified: (0, pg_core_1.boolean)('phone_verified').default(false).notNull(),
     phoneVerifyCode: (0, pg_core_1.varchar)('phone_verify_code', { length: 6 }),
     phoneVerifyExpiry: (0, pg_core_1.timestamp)('phone_verify_expiry'),
+    // --- Login 2FA (OTP) ---
+    loginOtpCode: (0, pg_core_1.varchar)('login_otp_code', { length: 255 }),
+    loginOtpExpiry: (0, pg_core_1.timestamp)('login_otp_expiry'),
     // --- Timestamps ---
     createdAt: (0, pg_core_1.timestamp)('created_at').defaultNow().notNull(),
     updatedAt: (0, pg_core_1.timestamp)('updated_at').defaultNow().notNull(),

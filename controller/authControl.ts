@@ -4,8 +4,32 @@ import crypto from 'crypto';
 import { Request, Response } from 'express';
 import { db } from '../config/dbConnect';
 import { users } from '../db/schema';
-import { eq } from 'drizzle-orm';
-import { sendVerificationEmail } from '../utils/mailer';
+import { and, eq, ne } from 'drizzle-orm';
+import { sendVerificationEmail, sendLoginOtpEmail } from '../utils/mailer';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'storeverse_secret_key_2026';
+const LOGIN_OTP_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+const generateLoginOtp = (): string =>
+  crypto.randomInt(100000, 1000000).toString();
+
+const createLoginTempToken = (userId: number): string =>
+  jwt.sign({ userId, purpose: 'login_2fa' }, JWT_SECRET, { expiresIn: '10m' });
+
+const verifyLoginTempToken = (tempToken: string): { userId: number } | null => {
+  try {
+    const decoded = jwt.verify(tempToken, JWT_SECRET) as jwt.JwtPayload & {
+      userId?: number;
+      purpose?: string;
+    };
+    if (decoded.purpose !== 'login_2fa' || typeof decoded.userId !== 'number') {
+      return null;
+    }
+    return { userId: decoded.userId };
+  } catch {
+    return null;
+  }
+};
 
 // Register (Initiate email verification)
 export const register = async (req: Request, res: Response) => {
@@ -115,32 +139,152 @@ export const login = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'Invalid email or password' });
     }
 
-    const jwtSecret = process.env.JWT_SECRET || 'storeverse_secret_key_2026';
-    const token = jwt.sign(
-      { userId: user.id},
-      jwtSecret,
-      { expiresIn: '1h' }
-    );
+    const otp = generateLoginOtp();
+    const otpHash = await bcrypt.hash(otp, 10);
+    const otpExpiry = new Date(Date.now() + LOGIN_OTP_TTL_MS);
 
-    res.status(200).json({ 
-      message: 'Login successful', 
-      token,
+    await db.update(users)
+      .set({
+        loginOtpCode: otpHash,
+        loginOtpExpiry: otpExpiry,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, user.id));
+
+    const tempToken = createLoginTempToken(user.id);
+
+    sendLoginOtpEmail(email, user.name || email.split('@')[0], otp).catch(err => {
+      console.error('Failed to send login OTP email:', err);
+    });
+
+    res.status(200).json({
+      message: 'Verification code sent to your email. Enter the OTP to complete login.',
+      requiresOtp: true,
+      tempToken,
       user: {
         id: user.id,
         name: user.name,
         email: user.email,
-        emailVerified: user.emailVerified
-      }
+        emailVerified: user.emailVerified,
+      },
     });
-    console.log("Successfully logged in user");
+    console.log(`Login OTP initiated for user ID: ${user.id}`);
   } catch (err: any) {
     console.error("Login error:", err);
     res.status(500).json({ message: 'Login failed', error: err.message });
   }
 };
 
+// Verify login OTP (2FA step 2)
+export const verifyLoginOtp = async (req: Request, res: Response) => {
+  const { tempToken, otp } = req.body;
 
+  if (!tempToken || !otp) {
+    return res.status(400).json({ message: 'Temporary session token and OTP are required' });
+  }
 
+  const session = verifyLoginTempToken(tempToken);
+  if (!session) {
+    return res.status(401).json({ message: 'Invalid or expired login session. Please sign in again.' });
+  }
+
+  try {
+    const userResult = await db.select().from(users).where(eq(users.id, session.userId)).limit(1);
+    if (userResult.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const user = userResult[0];
+
+    if (!user.loginOtpCode || !user.loginOtpExpiry) {
+      return res.status(400).json({ message: 'No pending verification code. Please sign in again.' });
+    }
+
+    if (new Date() > user.loginOtpExpiry) {
+      await db.update(users)
+        .set({ loginOtpCode: null, loginOtpExpiry: null, updatedAt: new Date() })
+        .where(eq(users.id, user.id));
+      return res.status(400).json({ message: 'Verification code has expired. Please sign in again.' });
+    }
+
+    const otpString = String(otp).trim();
+    const isOtpValid = await bcrypt.compare(otpString, user.loginOtpCode);
+    if (!isOtpValid) {
+      return res.status(401).json({ message: 'Invalid verification code' });
+    }
+
+    await db.update(users)
+      .set({
+        loginOtpCode: null,
+        loginOtpExpiry: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, user.id));
+
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
+
+    res.status(200).json({
+      message: 'Login successful',
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        emailVerified: user.emailVerified,
+      },
+    });
+    console.log(`Successfully verified login OTP for user ID: ${user.id}`);
+  } catch (err: any) {
+    console.error('Verify login OTP error:', err);
+    res.status(500).json({ message: 'OTP verification failed', error: err.message });
+  }
+};
+
+// Resend login OTP during 2FA flow
+export const resendLoginOtp = async (req: Request, res: Response) => {
+  const { tempToken } = req.body;
+
+  if (!tempToken) {
+    return res.status(400).json({ message: 'Temporary session token is required' });
+  }
+
+  const session = verifyLoginTempToken(tempToken);
+  if (!session) {
+    return res.status(401).json({ message: 'Invalid or expired login session. Please sign in again.' });
+  }
+
+  try {
+    const userResult = await db.select().from(users).where(eq(users.id, session.userId)).limit(1);
+    if (userResult.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const user = userResult[0];
+    const otp = generateLoginOtp();
+    const otpHash = await bcrypt.hash(otp, 10);
+    const otpExpiry = new Date(Date.now() + LOGIN_OTP_TTL_MS);
+
+    await db.update(users)
+      .set({
+        loginOtpCode: otpHash,
+        loginOtpExpiry: otpExpiry,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, user.id));
+
+    sendLoginOtpEmail(user.email, user.name || user.email.split('@')[0], otp).catch(err => {
+      console.error('Failed to resend login OTP email:', err);
+    });
+
+    res.status(200).json({
+      message: `A new verification code has been sent to ${user.email}.`,
+    });
+    console.log(`Resent login OTP for user ID: ${user.id}`);
+  } catch (err: any) {
+    console.error('Resend login OTP error:', err);
+    res.status(500).json({ message: 'Failed to resend verification code', error: err.message });
+  }
+};
 
 // Fetch User Info by ID
 export const fetchUserId = async (req: Request, res: Response) => {
@@ -187,7 +331,7 @@ export const UpdateUserInfo = async (req: Request, res: Response) => {
     }
 
     const updateData: any = {};
-    const allowedFields = ['name',  'email', 'phoneNumber', 'storeName', 'category'];
+    const allowedFields = ['name',  'email', 'phoneNumber', 'storeName', 'category', ];
 
     for (const key of allowedFields) {
       if (req.body[key] !== undefined) {
@@ -221,6 +365,50 @@ export const UpdateUserInfo = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Failed to update user', error: err.message });
   }
 };
+
+
+// Change Password
+export const ChangePassword = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const idStr = Array.isArray(id) ? id[0] : (id || '');
+    const userId = parseInt(idStr, 10);
+    if (isNaN(userId)) {
+      return res.status(400).json({ message: 'Invalid user ID format' });
+    }
+
+    const userResult = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    if (userResult.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+
+
+    const password = req.body.password ?? req.body.newPassword;
+    if (!password || typeof password !== 'string') {
+      return res.status(400).json({ message: 'Password is required' });
+    }
+
+    const updateData: any = {};
+    const hashedPassword = await bcrypt.hash(password, 10);
+    updateData.password = hashedPassword;
+    updateData.updatedAt = new Date();
+    await db.update(users).set(updateData).where(eq(users.id, userId));
+
+    res.status(200).json({ 
+      message: 'User password updated successfully',
+    });
+    console.log("Successfully updated user password");
+  } catch (err: any) {
+    console.error("Update user password error:", err);
+    res.status(500).json({ message: 'Failed to update user password', error: err.message });
+  }
+};
+
+
+
+
+
 
 // Helper to render glassmorphic status page for link verification clicks
 const renderStatusPage = (success: boolean, message: string, email?: string, token?: string) => {
@@ -463,9 +651,17 @@ export const completeRegistration = async (req: Request, res: Response): Promise
       return res.status(400).json({ message: 'Invalid or mismatching verification token' });
     }
 
-  
- 
-   
+    if (phoneNumber) {
+      const phoneInUse = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(and(eq(users.phoneNumber, phoneNumber), ne(users.id, user.id)))
+        .limit(1);
+
+      if (phoneInUse.length > 0) {
+        return res.status(409).json({ message: 'This phone number is already registered to another account' });
+      }
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -504,6 +700,13 @@ export const completeRegistration = async (req: Request, res: Response): Promise
     console.log(`Successfully completed registration for user ID: ${user.id}`);
   } catch (err: any) {
     console.error("Complete registration error:", err);
+    if (err?.cause?.code === '23505') {
+      const detail: string = err.cause.detail || '';
+      if (detail.includes('phone_number')) {
+        return res.status(409).json({ message: 'This phone number is already registered to another account' });
+      }
+      return res.status(409).json({ message: 'A unique field conflicts with an existing account' });
+    }
     res.status(500).json({ message: 'Registration completion failed', error: err.message });
   }
 };
