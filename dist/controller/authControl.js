@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.completeRegistration = exports.resendVerificationCode = exports.verifyEmail = exports.UpdateUserInfo = exports.fetchUserId = exports.resendLoginOtp = exports.verifyLoginOtp = exports.login = exports.register = void 0;
+exports.completeRegistration = exports.resendVerificationCode = exports.verifyEmail = exports.ChangePassword = exports.UpdateUserInfo = exports.fetchUserId = exports.resendLoginOtp = exports.verifyLoginOtp = exports.login = exports.register = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const crypto_1 = __importDefault(require("crypto"));
@@ -286,7 +286,7 @@ const UpdateUserInfo = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
         const updateData = {};
-        const allowedFields = ['name', 'email', 'phoneNumber', 'storeName', 'category'];
+        const allowedFields = ['name', 'email', 'phoneNumber', 'storeName', 'category',];
         for (const key of allowedFields) {
             if (req.body[key] !== undefined) {
                 updateData[key] = req.body[key];
@@ -314,6 +314,39 @@ const UpdateUserInfo = async (req, res) => {
     }
 };
 exports.UpdateUserInfo = UpdateUserInfo;
+// Change Password
+const ChangePassword = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const idStr = Array.isArray(id) ? id[0] : (id || '');
+        const userId = parseInt(idStr, 10);
+        if (isNaN(userId)) {
+            return res.status(400).json({ message: 'Invalid user ID format' });
+        }
+        const userResult = await dbConnect_1.db.select().from(schema_1.users).where((0, drizzle_orm_1.eq)(schema_1.users.id, userId)).limit(1);
+        if (userResult.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        const password = req.body.password ?? req.body.newPassword;
+        if (!password || typeof password !== 'string') {
+            return res.status(400).json({ message: 'Password is required' });
+        }
+        const updateData = {};
+        const hashedPassword = await bcrypt_1.default.hash(password, 10);
+        updateData.password = hashedPassword;
+        updateData.updatedAt = new Date();
+        await dbConnect_1.db.update(schema_1.users).set(updateData).where((0, drizzle_orm_1.eq)(schema_1.users.id, userId));
+        res.status(200).json({
+            message: 'User password updated successfully',
+        });
+        console.log("Successfully updated user password");
+    }
+    catch (err) {
+        console.error("Update user password error:", err);
+        res.status(500).json({ message: 'Failed to update user password', error: err.message });
+    }
+};
+exports.ChangePassword = ChangePassword;
 // Helper to render glassmorphic status page for link verification clicks
 const renderStatusPage = (success, message, email, token) => {
     return `
@@ -534,6 +567,16 @@ const completeRegistration = async (req, res) => {
         if (!user.emailVerifyCode || user.emailVerifyCode !== token) {
             return res.status(400).json({ message: 'Invalid or mismatching verification token' });
         }
+        if (phoneNumber) {
+            const phoneInUse = await dbConnect_1.db
+                .select({ id: schema_1.users.id })
+                .from(schema_1.users)
+                .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.users.phoneNumber, phoneNumber), (0, drizzle_orm_1.ne)(schema_1.users.id, user.id)))
+                .limit(1);
+            if (phoneInUse.length > 0) {
+                return res.status(409).json({ message: 'This phone number is already registered to another account' });
+            }
+        }
         const hashedPassword = await bcrypt_1.default.hash(password, 10);
         // Update the profile fields and nullify the token
         await dbConnect_1.db.update(schema_1.users)
@@ -565,6 +608,13 @@ const completeRegistration = async (req, res) => {
     }
     catch (err) {
         console.error("Complete registration error:", err);
+        if (err?.cause?.code === '23505') {
+            const detail = err.cause.detail || '';
+            if (detail.includes('phone_number')) {
+                return res.status(409).json({ message: 'This phone number is already registered to another account' });
+            }
+            return res.status(409).json({ message: 'A unique field conflicts with an existing account' });
+        }
         res.status(500).json({ message: 'Registration completion failed', error: err.message });
     }
 };

@@ -3,7 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { dbConnect } from './config/dbConnect';
 import AuthRoute from "./routes/AuthRoute"
-
+import StoreRoute from "./routes/storeRoute"
 // Load environment variables
 dotenv.config();
 
@@ -28,6 +28,7 @@ app.get('/', (req: Request, res: Response) => {
 // app.get('/db-version', requestHandler);
 
 app.use(`/api/auth`, AuthRoute);
+app.use(`/api/store`, StoreRoute);
 
 // Error Handling Middleware for JSON parsing errors
 app.use((err: any, req: Request, res: Response, next: NextFunction): any => {

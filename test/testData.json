@@ -1,81 +1,130 @@
-[
-  {
-    "name": "Jane Boutique",
-    "username": "jane_boutique",
-    "email": "jane@storeverse.com",
-    "password": "Password123!",
-    "phoneNumber": "+15550101",
-    "storeName": "Luxe Apparel",
-    "category": "Fashion & Apparel"
+{
+  "signupUsers": [
+    {
+      "name": "Jane Boutique",
+      "username": "jane_boutique",
+      "email": "jane@storeverse.com",
+      "password": "Password123!",
+      "phoneNumber": "+15550101",
+      "storeName": "Luxe Apparel",
+      "category": "Fashion & Apparel"
+    },
+    {
+      "name": "John Tech",
+      "username": "john_tech",
+      "email": "john@storeverse.com",
+      "password": "TechPassword987",
+      "phoneNumber": "+15550202",
+      "storeName": "TechVerse Solutions",
+      "category": "Electronics & Gadgets"
+    },
+    {
+      "name": "Alice Cooper",
+      "username": "alice_sweet_treats",
+      "email": "alice@storeverse.com",
+      "password": "BakingSweet!456",
+      "phoneNumber": "+15550303",
+      "storeName": "Sweet Delights Bakery",
+      "category": "Food & Bakery"
+    },
+    {
+      "name": "David Green",
+      "username": "david_green",
+      "email": "david@storeverse.com",
+      "password": "PlantLife$321",
+      "phoneNumber": "+15550404",
+      "storeName": "The Urban Jungle",
+      "category": "Home & Gardening"
+    },
+    {
+      "name": "Sophia Glam",
+      "username": "sophia_glam",
+      "email": "sophia@storeverse.com",
+      "password": "BeautySecret#888",
+      "phoneNumber": "+15550505",
+      "storeName": "Aura Cosmetics",
+      "category": "Beauty & Cosmetics"
+    },
+    {
+      "name": "Marcus Fit",
+      "username": "marcus_fit",
+      "email": "marcus@storeverse.com",
+      "password": "StrongerEveryDay!",
+      "phoneNumber": "+15550606",
+      "storeName": "Apex Athletics",
+      "category": "Sports & Fitness"
+    },
+    {
+      "name": "Elena Books",
+      "username": "elena_books",
+      "email": "elena@storeverse.com",
+      "password": "ReadMoreBooks2026",
+      "phoneNumber": "+15550707",
+      "storeName": "The Cozy Nook",
+      "category": "Books & Stationery"
+    },
+    {
+      "name": "Bob Miller",
+      "username": "bob_miller",
+      "email": "bob@storeverse.com",
+      "password": "SimplePassword111",
+      "phoneNumber": "+15550808",
+      "storeName": null,
+      "category": null
+    },
+    {
+      "email": "akinrinadee8006@student.babcock.edu.ng",
+      "password": "111"
+    }
+  ],
+  "login": {
+    "email": "20061372006ak@gmail.com",
+    "password": "your-password-here"
   },
-  {
-    "name": "John Tech",
-    "username": "john_tech",
-    "email": "john@storeverse.com",
-    "password": "TechPassword987",
-    "phoneNumber": "+15550202",
-    "storeName": "TechVerse Solutions",
-    "category": "Electronics & Gadgets"
-  },
-  {
-    "name": "Alice Cooper",
-    "username": "alice_sweet_treats",
-    "email": "alice@storeverse.com",
-    "password": "BakingSweet!456",
-    "phoneNumber": "+15550303",
-    "storeName": "Sweet Delights Bakery",
-    "category": "Food & Bakery"
-  },
-  {
-    "name": "David Green",
-    "username": "david_green",
-    "email": "david@storeverse.com",
-    "password": "PlantLife$321",
-    "phoneNumber": "+15550404",
-    "storeName": "The Urban Jungle",
-    "category": "Home & Gardening"
-  },
-  {
-    "name": "Sophia Glam",
-    "username": "sophia_glam",
-    "email": "sophia@storeverse.com",
-    "password": "BeautySecret#888",
-    "phoneNumber": "+15550505",
-    "storeName": "Aura Cosmetics",
-    "category": "Beauty & Cosmetics"
-  },
-  {
-    "name": "Marcus Fit",
-    "username": "marcus_fit",
-    "email": "marcus@storeverse.com",
-    "password": "StrongerEveryDay!",
-    "phoneNumber": "+15550606",
-    "storeName": "Apex Athletics",
-    "category": "Sports & Fitness"
-  },
-  {
-    "name": "Elena Books",
-    "username": "elena_books",
-    "email": "elena@storeverse.com",
-    "password": "ReadMoreBooks2026",
-    "phoneNumber": "+15550707",
-    "storeName": "The Cozy Nook",
-    "category": "Books & Stationery"
-  },
-  {
-    "name": "Bob Miller",
-    "username": "bob_miller",
-    "email": "bob@storeverse.com",
-    "password": "SimplePassword111",
-    "phoneNumber": "+15550808",
-    "storeName": null,
-    "category": null
-  },
-  {
-    "email": "akinrinadee8006@student.babcock.edu.ng",
-    "password": "111"
+  "createStore": [
+    {
+      "userId": 1,
+      "image": "https://cdn.storeverse.com/stores/luxe-apparel-logo.png",
+      "storeName": "Luxe Apparel",
+      "category": "Fashion & Apparel",
+      "businessAddress": "42 Fashion Ave, New York, NY 10001",
+      "country": "United States",
+      "currency": "USD",
+      "subDomain": "luxe-apparel"
+    },
+    {
+      "userId": 2,
+      "image": "https://cdn.storeverse.com/stores/techverse-logo.png",
+      "storeName": "TechVerse Solutions",
+      "category": "Electronics & Gadgets",
+      "businessAddress": "88 Silicon Blvd, San Francisco, CA 94105",
+      "country": "United States",
+      "currency": "USD",
+      "subDomain": "techverse"
+    },
+    {
+      "userId": 3,
+      "image": "https://cdn.storeverse.com/stores/sweet-delights-logo.png",
+      "storeName": "Sweet Delights Bakery",
+      "category": "Food & Bakery",
+      "businessAddress": "15 Baker Street, London, UK",
+      "country": "United Kingdom",
+      "currency": "GBP",
+      "subDomain": "sweet-delights"
+    },
+    {
+      "userId": 4,
+      "image": "https://cdn.storeverse.com/stores/urban-jungle-logo.png",
+      "storeName": "The Urban Jungle",
+      "category": "Home & Gardening",
+      "businessAddress": "7 Green Lane, Portland, OR 97201",
+      "country": "United States",
+      "currency": "USD",
+      "subDomain": "urban-jungle"
+    }
+  ],
+  "notes": {
+    "createStoreEndpoint": "POST http://localhost:5000/api/store/createStore",
+    "userIdHint": "Replace userId with the numeric id from your users table after signup/login. Run GET /api/auth/user/:id or check Neon after registering."
   }
-  "email": "20061372006ak@gmail.com",
-  "token": "6be9186a0fb65a2a795120b4f4b7d36f131dff848e2f8c3223d999983a140b2c",
-  
-]
+}

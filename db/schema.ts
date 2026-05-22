@@ -1,4 +1,4 @@
-import { pgTable, serial, text, varchar, timestamp, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, varchar, timestamp, boolean, integer } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
   // --- Identity ---
@@ -24,4 +24,19 @@ export const users = pgTable('users', {
   // --- Timestamps ---
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const stores = pgTable('stores', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => users.id).notNull(),
+  image: text('image'),
+  storeName: varchar('store_name', { length: 255 }),
+  category: varchar('category', { length: 255 }),
+  businessAddress: text('business_address'),
+  country: varchar('country', { length: 255 }),
+  currency: varchar('currency', { length: 255 }),
+  subDomain: varchar('sub_domain', { length: 255 }),
+   createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+
 });

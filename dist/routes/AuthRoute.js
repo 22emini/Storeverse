@@ -28,4 +28,5 @@ router.get("/verify-email", authControl_1.verifyEmail);
 router.post("/verify-email", authControl_1.verifyEmail);
 router.post("/resend-verification", authControl_1.resendVerificationCode);
 router.post("/complete-registration", authControl_1.completeRegistration);
+router.put("/change-password/:id", authControl_1.ChangePassword);
 exports.default = router;

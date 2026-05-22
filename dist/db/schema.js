@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.users = void 0;
+exports.stores = exports.users = void 0;
 const pg_core_1 = require("drizzle-orm/pg-core");
 exports.users = (0, pg_core_1.pgTable)('users', {
     // --- Identity ---
@@ -16,14 +16,23 @@ exports.users = (0, pg_core_1.pgTable)('users', {
     emailVerified: (0, pg_core_1.boolean)('email_verified').default(false).notNull(),
     emailVerifyCode: (0, pg_core_1.varchar)('email_verify_code', { length: 255 }),
     emailVerifyExpiry: (0, pg_core_1.timestamp)('email_verify_expiry'),
-    // --- Phone Verification ---
-    phoneVerified: (0, pg_core_1.boolean)('phone_verified').default(false).notNull(),
-    phoneVerifyCode: (0, pg_core_1.varchar)('phone_verify_code', { length: 6 }),
-    phoneVerifyExpiry: (0, pg_core_1.timestamp)('phone_verify_expiry'),
     // --- Login 2FA (OTP) ---
     loginOtpCode: (0, pg_core_1.varchar)('login_otp_code', { length: 255 }),
     loginOtpExpiry: (0, pg_core_1.timestamp)('login_otp_expiry'),
     // --- Timestamps ---
+    createdAt: (0, pg_core_1.timestamp)('created_at').defaultNow().notNull(),
+    updatedAt: (0, pg_core_1.timestamp)('updated_at').defaultNow().notNull(),
+});
+exports.stores = (0, pg_core_1.pgTable)('stores', {
+    id: (0, pg_core_1.serial)('id').primaryKey(),
+    userId: (0, pg_core_1.integer)('user_id').references(() => exports.users.id).notNull(),
+    image: (0, pg_core_1.text)('image'),
+    storeName: (0, pg_core_1.varchar)('store_name', { length: 255 }),
+    category: (0, pg_core_1.varchar)('category', { length: 255 }),
+    businessAddress: (0, pg_core_1.text)('business_address'),
+    country: (0, pg_core_1.varchar)('country', { length: 255 }),
+    currency: (0, pg_core_1.varchar)('currency', { length: 255 }),
+    subDomain: (0, pg_core_1.varchar)('sub_domain', { length: 255 }),
     createdAt: (0, pg_core_1.timestamp)('created_at').defaultNow().notNull(),
     updatedAt: (0, pg_core_1.timestamp)('updated_at').defaultNow().notNull(),
 });
