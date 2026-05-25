@@ -1,6 +1,6 @@
 //where Router will live
 import express from "express"
-import { register, fetchUserId, login, verifyLoginOtp,ChangePassword,  resendLoginOtp, UpdateUserInfo, verifyEmail, resendVerificationCode, completeRegistration } from "../controller/authControl";
+import { register, fetchUserId, login, verifyLoginOtp,ChangePassword,  resendLoginOtp, UpdateUserInfo, verifyEmail, resendVerificationCode, completeRegistration } from "../controller/auth/authControl";
 
 const router = express.Router();
 

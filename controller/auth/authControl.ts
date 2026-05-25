@@ -2,10 +2,10 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { Request, Response } from 'express';
-import { db } from '../config/dbConnect';
-import { users } from '../db/schema';
+import { db } from '../../config/dbConnect';
+import { users } from '../../db/schema';
 import { and, eq, ne } from 'drizzle-orm';
-import { sendVerificationEmail, sendLoginOtpEmail } from '../utils/mailer';
+import { sendVerificationEmail, sendLoginOtpEmail } from '../../utils/mailer';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'storeverse_secret_key_2026';
 const LOGIN_OTP_TTL_MS = 10 * 60 * 1000; // 10 minutes
@@ -68,7 +68,7 @@ export const register = async (req: Request, res: Response) => {
       const host = req.get('host');
       const verificationLink = `${protocol}://${host}/api/auth/verify-email?token=${token}`;
 
-      sendVerificationEmail(email, user.name || email.split('@')[0], verificationLink).catch(err => {
+      sendVerificationEmail(email, user.name || email.split('@')[0], verificationLink).catch((err: any) => {
         console.error("Failed to send verification email:", err);
       });
 
@@ -97,7 +97,7 @@ export const register = async (req: Request, res: Response) => {
     const verificationLink = `${protocol}://${host}/api/auth/verify-email?token=${token}`;
 
     // Send verification email asynchronously
-    sendVerificationEmail(email, defaultName, verificationLink).catch(err => {
+    sendVerificationEmail(email, defaultName, verificationLink).catch((err: any) => {
       console.error("Failed to send verification email:", err);
     });
 
@@ -153,7 +153,7 @@ export const login = async (req: Request, res: Response) => {
 
     const tempToken = createLoginTempToken(user.id);
 
-    sendLoginOtpEmail(email, user.name || email.split('@')[0], otp).catch(err => {
+    sendLoginOtpEmail(email, user.name || email.split('@')[0], otp).catch((err:any) => {
       console.error('Failed to send login OTP email:', err);
     });
 
@@ -272,7 +272,7 @@ export const resendLoginOtp = async (req: Request, res: Response) => {
       })
       .where(eq(users.id, user.id));
 
-    sendLoginOtpEmail(user.email, user.name || user.email.split('@')[0], otp).catch(err => {
+    sendLoginOtpEmail(user.email, user.name || user.email.split('@')[0], otp).catch((err:any) => {
       console.error('Failed to resend login OTP email:', err);
     });
 
@@ -614,7 +614,7 @@ export const resendVerificationCode = async (req: Request, res: Response): Promi
     const host = req.get('host');
     const verificationLink = `${protocol}://${host}/api/auth/verify-email?token=${newToken}`;
 
-    sendVerificationEmail(email, user.name || email.split('@')[0], verificationLink).catch(err => {
+    sendVerificationEmail(email, user.name || email.split('@')[0], verificationLink).catch((err:any) => {
       console.error("Failed to resend verification email:", err);
     });
 

@@ -2,9 +2,9 @@
 
 import { Request, Response } from 'express';
 
-import { db } from '../config/dbConnect';
+import { db } from '../../config/dbConnect';
 
-import { users, stores } from '../db/schema';
+import { users, stores } from '../../db/schema';
 
 import { eq } from 'drizzle-orm';
 

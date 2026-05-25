@@ -2,8 +2,8 @@
 // createStore, getStore, updateStore
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateStore = exports.getStore = exports.createStore = void 0;
-const dbConnect_1 = require("../config/dbConnect");
-const schema_1 = require("../db/schema");
+const dbConnect_1 = require("../../config/dbConnect");
+const schema_1 = require("../../db/schema");
 const drizzle_orm_1 = require("drizzle-orm");
 const createStore = async (req, res) => {
     try {

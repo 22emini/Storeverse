@@ -1,90 +1,45 @@
 {
-  "signupUsers": [
-    {
-      "name": "Jane Boutique",
-      "username": "jane_boutique",
-      "email": "jane@storeverse.com",
-      "password": "Password123!",
-      "phoneNumber": "+15550101",
-      "storeName": "Luxe Apparel",
-      "category": "Fashion & Apparel"
-    },
-    {
-      "name": "John Tech",
-      "username": "john_tech",
-      "email": "john@storeverse.com",
-      "password": "TechPassword987",
-      "phoneNumber": "+15550202",
-      "storeName": "TechVerse Solutions",
-      "category": "Electronics & Gadgets"
-    },
-    {
-      "name": "Alice Cooper",
-      "username": "alice_sweet_treats",
-      "email": "alice@storeverse.com",
-      "password": "BakingSweet!456",
-      "phoneNumber": "+15550303",
-      "storeName": "Sweet Delights Bakery",
-      "category": "Food & Bakery"
-    },
-    {
-      "name": "David Green",
-      "username": "david_green",
-      "email": "david@storeverse.com",
-      "password": "PlantLife$321",
-      "phoneNumber": "+15550404",
-      "storeName": "The Urban Jungle",
-      "category": "Home & Gardening"
-    },
-    {
-      "name": "Sophia Glam",
-      "username": "sophia_glam",
-      "email": "sophia@storeverse.com",
-      "password": "BeautySecret#888",
-      "phoneNumber": "+15550505",
-      "storeName": "Aura Cosmetics",
-      "category": "Beauty & Cosmetics"
-    },
-    {
-      "name": "Marcus Fit",
-      "username": "marcus_fit",
-      "email": "marcus@storeverse.com",
-      "password": "StrongerEveryDay!",
-      "phoneNumber": "+15550606",
-      "storeName": "Apex Athletics",
-      "category": "Sports & Fitness"
-    },
-    {
-      "name": "Elena Books",
-      "username": "elena_books",
-      "email": "elena@storeverse.com",
-      "password": "ReadMoreBooks2026",
-      "phoneNumber": "+15550707",
-      "storeName": "The Cozy Nook",
-      "category": "Books & Stationery"
-    },
-    {
-      "name": "Bob Miller",
-      "username": "bob_miller",
-      "email": "bob@storeverse.com",
-      "password": "SimplePassword111",
-      "phoneNumber": "+15550808",
-      "storeName": null,
-      "category": null
-    },
-    {
-      "email": "akinrinadee8006@student.babcock.edu.ng",
-      "password": "111"
-    }
+  "register": [
+    { "email": "jane@storeverse.com" },
+    { "email": "john@storeverse.com" },
+    { "email": "alice@storeverse.com" }
   ],
+  "completeRegistration": {
+    "email": "jane@storeverse.com",
+    "token": "paste-token-from-verify-email-link",
+    "name": "Jane Boutique",
+    "password": "Password123!",
+    "phoneNumber": "+15550101",
+    "storeName": "Luxe Apparel",
+    "category": "Fashion & Apparel"
+  },
   "login": {
-    "email": "20061372006ak@gmail.com",
-    "password": "your-password-here"
+    "email": "jane@storeverse.com",
+    "password": "Password123!"
+  },
+  "verifyLoginOtp": {
+    "tempToken": "paste-tempToken-from-login-response",
+    "otp": "123456"
+  },
+  "resendLoginOtp": {
+    "tempToken": "paste-tempToken-from-login-response"
+  },
+  "resendVerification": {
+    "email": "jane@storeverse.com"
+  },
+  "updateUserInfo": {
+    "name": "Jane Boutique Updated",
+    "phoneNumber": "+15550199",
+    "storeName": "Luxe Apparel Co",
+    "category": "Fashion"
+  },
+  "changePassword": {
+    "password": "NewPassword123!",
+    "newPassword": "NewPassword123!"
   },
   "createStore": [
     {
       "userId": 1,
-      "image": "https://cdn.storeverse.com/stores/luxe-apparel-logo.png",
       "storeName": "Luxe Apparel",
       "category": "Fashion & Apparel",
       "businessAddress": "42 Fashion Ave, New York, NY 10001",
@@ -94,37 +49,283 @@
     },
     {
       "userId": 2,
-      "image": "https://cdn.storeverse.com/stores/techverse-logo.png",
       "storeName": "TechVerse Solutions",
       "category": "Electronics & Gadgets",
       "businessAddress": "88 Silicon Blvd, San Francisco, CA 94105",
       "country": "United States",
       "currency": "USD",
       "subDomain": "techverse"
-    },
-    {
-      "userId": 3,
-      "image": "https://cdn.storeverse.com/stores/sweet-delights-logo.png",
-      "storeName": "Sweet Delights Bakery",
-      "category": "Food & Bakery",
-      "businessAddress": "15 Baker Street, London, UK",
-      "country": "United Kingdom",
-      "currency": "GBP",
-      "subDomain": "sweet-delights"
-    },
-    {
-      "userId": 4,
-      "image": "https://cdn.storeverse.com/stores/urban-jungle-logo.png",
-      "storeName": "The Urban Jungle",
-      "category": "Home & Gardening",
-      "businessAddress": "7 Green Lane, Portland, OR 97201",
-      "country": "United States",
-      "currency": "USD",
-      "subDomain": "urban-jungle"
     }
   ],
+  "updateStore": {
+    "storeName": "Luxe Apparel Premium",
+    "category": "Fashion",
+    "businessAddress": "100 Fifth Ave, New York, NY 10010",
+    "country": "United States",
+    "currency": "USD",
+    "subDomain": "luxe-premium"
+  },
+  "addProduct": {
+    "userId": 1,
+    "name": "Silk Evening Dress",
+    "description": "Elegant silk dress for evening wear",
+    "category": "Dresses",
+    "price": "189.99",
+    "stock": 24,
+    "sku": "LUXE-DRESS-001",
+    "barcode": "8901234567890",
+    "status": "active",
+    "variants": "S,M,L,XL",
+    "image": "https://cdn.example.com/products/silk-dress.jpg"
+  },
+  "bulkUploadProducts": {
+    "userId": 1,
+    "products": [
+      {
+        "name": "Leather Crossbody Bag",
+        "description": "Compact genuine leather crossbody with adjustable strap",
+        "category": "Accessories",
+        "price": "79.50",
+        "stock": 40,
+        "sku": "LUXE-BAG-002",
+        "barcode": "8901234567891",
+        "status": "active",
+        "variants": "Black,Tan,Cognac",
+        "image": "https://cdn.example.com/products/leather-bag.jpg"
+      },
+      {
+        "name": "Cashmere Scarf",
+        "description": "Lightweight 100% cashmere scarf",
+        "category": "Accessories",
+        "price": "45.00",
+        "stock": 60,
+        "sku": "LUXE-SCARF-003",
+        "barcode": "8901234567892",
+        "status": "active",
+        "variants": "Ivory,Navy,Burgundy",
+        "image": "https://cdn.example.com/products/cashmere-scarf.jpg"
+      },
+      {
+        "name": "Wool Blazer",
+        "description": "Tailored single-breasted blazer for office and evening",
+        "category": "Outerwear",
+        "price": "149.99",
+        "stock": 18,
+        "sku": "LUXE-BLAZER-004",
+        "barcode": "8901234567893",
+        "status": "active",
+        "variants": "36,38,40,42",
+        "image": "https://cdn.example.com/products/wool-blazer.jpg"
+      },
+      {
+        "name": "Linen Summer Shirt",
+        "description": "Breathable linen button-down",
+        "category": "Tops",
+        "price": "59.00",
+        "stock": 35,
+        "sku": "LUXE-SHIRT-005",
+        "status": "active",
+        "variants": "S,M,L,XL"
+      },
+      {
+        "name": "Satin Midi Skirt",
+        "description": "High-waist satin skirt with side slit",
+        "category": "Bottoms",
+        "price": "72.00",
+        "stock": 22,
+        "sku": "LUXE-SKIRT-006",
+        "status": "active"
+      },
+      {
+        "name": "Pearl Drop Earrings",
+        "description": "Sterling silver hooks with freshwater pearls",
+        "category": "Jewelry",
+        "price": "38.00",
+        "stock": 50,
+        "sku": "LUXE-EAR-007",
+        "status": "active",
+        "image": "https://cdn.example.com/products/pearl-earrings.jpg"
+      },
+      {
+        "name": "Velvet Evening Clutch",
+        "category": "Accessories",
+        "price": "55.00",
+        "stock": 15,
+        "sku": "LUXE-CLUTCH-008",
+        "status": "active"
+      },
+      {
+        "name": "Merino Turtleneck",
+        "description": "Fine-knit merino wool turtleneck",
+        "category": "Tops",
+        "price": "68.00",
+        "stock": 0,
+        "sku": "LUXE-TURTLE-009",
+        "status": "out_of_stock"
+      }
+    ]
+  },
+  "bulkUploadProductsUser2": {
+    "userId": 2,
+    "products": [
+      {
+        "name": "Wireless Noise-Canceling Headphones",
+        "description": "40h battery, Bluetooth 5.3, foldable design",
+        "category": "Audio",
+        "price": "199.99",
+        "stock": 30,
+        "sku": "TECH-HP-001",
+        "barcode": "8902234567001",
+        "status": "active",
+        "variants": "Black,Silver",
+        "image": "https://cdn.example.com/products/headphones.jpg"
+      },
+      {
+        "name": "USB-C Hub 7-in-1",
+        "description": "HDMI, SD, USB-A, 100W PD pass-through",
+        "category": "Accessories",
+        "price": "49.99",
+        "stock": 75,
+        "sku": "TECH-HUB-002",
+        "status": "active"
+      },
+      {
+        "product": "Mechanical Keyboard RGB",
+        "description": "Hot-swappable switches, legacy field name \"product\" instead of name",
+        "category": "Peripherals",
+        "price": "129.00",
+        "stock": 20,
+        "sku": "TECH-KB-003",
+        "status": "active",
+        "variants": "Red,Blue,Brown switches"
+      },
+      {
+        "name": "Portable SSD 1TB",
+        "category": "Storage",
+        "price": "89.99",
+        "stock": 45,
+        "sku": "TECH-SSD-004",
+        "status": "active"
+      }
+    ]
+  },
+  "bulkUploadProductsMinimal": {
+    "userId": 1,
+    "products": [
+      { "name": "Quick Test Item A", "sku": "TEST-A-001" },
+      { "name": "Quick Test Item B", "sku": "TEST-B-002" }
+    ]
+  },
+  "updateProduct": {
+    "name": "Silk Evening Dress (Premium)",
+    "price": "199.99",
+    "stock": 20,
+    "status": "active"
+  },
+  "createStaff": [
+    {
+      "storeId": 1,
+      "name": "Emily Carter",
+      "email": "emily@luxe-apparel.com",
+      "role": "manager",
+      "status": "active"
+    },
+    {
+      "storeId": 1,
+      "name": "Ryan Brooks",
+      "email": "ryan@luxe-apparel.com",
+      "role": "staff",
+      "status": "active"
+    }
+  ],
+  "updateStaff": {
+    "name": "Emily Carter",
+    "email": "emily.manager@luxe-apparel.com",
+    "role": "admin",
+    "status": "active"
+  },
+  "storeAnalytics": [
+    {
+      "storeId": 1,
+      "totalSales": 12500,
+      "orders": 84,
+      "visitors": 1200,
+      "activeProducts": 18
+    },
+    {
+      "storeId": 2,
+      "totalSales": 8900,
+      "orders": 52,
+      "visitors": 760,
+      "activeProducts": 12
+    }
+  ],
+  "createRegion": [
+    {
+      "storeId": 1,
+      "country": "United States",
+      "code": "US",
+      "taxRate": "8.25",
+      "shippingZone": "domestic",
+      "status": "active"
+    },
+    {
+      "storeId": 1,
+      "country": "Canada",
+      "code": "CA",
+      "taxRate": "13.00",
+      "shippingZone": "international",
+      "status": "active"
+    }
+  ],
+  "updateRegion": {
+    "country": "United States",
+    "code": "US",
+    "taxRate": "8.875",
+    "status": "active"
+  },
+  "endpoints": {
+    "baseUrl": "http://localhost:5000",
+    "auth": {
+      "register": "POST /api/auth/register",
+      "completeRegistration": "POST /api/auth/complete-registration",
+      "login": "POST /api/auth/login",
+      "verifyLoginOtp": "POST /api/auth/verify-login-otp",
+      "resendLoginOtp": "POST /api/auth/resend-login-otp",
+      "getUser": "GET /api/auth/user/:id",
+      "updateUser": "PUT /api/auth/updateInfo/:id",
+      "changePassword": "PUT /api/auth/change-password/:id"
+    },
+    "store": {
+      "createStore": "POST /api/store/createStore (multipart: field image optional)",
+      "getStore": "GET /api/store/:id",
+      "updateStore": "PUT /api/store/:id",
+      "createStaff": "POST /api/store/staff",
+      "getStaff": "GET /api/store/staff/:storeId",
+      "updateStaff": "PUT /api/store/staff/:id",
+      "deleteStaff": "DELETE /api/store/staff/:id",
+      "createAnalytics": "POST /api/store/analytics",
+      "getAnalytics": "GET /api/store/analytics/:storeId",
+      "createRegion": "POST /api/store/region",
+      "getRegion": "GET /api/store/region/:storeId",
+      "updateRegion": "PUT /api/store/region/:id"
+    },
+    "product": {
+      "addProduct": "POST /api/product/add",
+      "bulkUpload": "POST /api/product/bulk",
+      "bulkUploadFile": "POST /api/product/bulk/upload (multipart field: file)",
+      "getByUser": "GET /api/product/user/:userId",
+      "getOne": "GET /api/product/:id",
+      "update": "PUT /api/product/:id"
+    }
+  },
   "notes": {
-    "createStoreEndpoint": "POST http://localhost:5000/api/store/createStore",
-    "userIdHint": "Replace userId with the numeric id from your users table after signup/login. Run GET /api/auth/user/:id or check Neon after registering."
+    "userId": "Use numeric ids from your DB after register + complete-registration (GET /api/auth/user/:id).",
+    "storeId": "Use store id from createStore response or GET /api/store/:id.",
+    "productUserId": "All product routes use userId (owner), not storeId.",
+    "bulkUpload": "Send JSON body { userId, products: [...] } or upload test/bulkUploadProducts.json via POST /api/product/bulk/upload (multipart field: file). Replace userId with your DB id. Each product needs name (or legacy field product). Optional: description, category, price, stock, sku, barcode, status, variants, image.",
+    "createStoreImage": "For file upload use form-data with field name image; JSON body fields go in the same request.",
+    "otp": "Login OTP is emailed; use tempToken + otp from login flow for verify-login-otp.",
+    "token": "completeRegistration.token must match emailVerifyCode after verify-email."
   }
 }

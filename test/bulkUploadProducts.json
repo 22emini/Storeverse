@@ -1,0 +1,87 @@
+{
+  "userId": 1,
+  "products": [
+    {
+      "name": "Leather Crossbody Bag",
+      "description": "Compact genuine leather crossbody with adjustable strap",
+      "category": "Accessories",
+      "price": "79.50",
+      "stock": 40,
+      "sku": "LUXE-BAG-002",
+      "barcode": "8901234567891",
+      "status": "active",
+      "variants": "Black,Tan,Cognac",
+      "image": "https://cdn.example.com/products/leather-bag.jpg"
+    },
+    {
+      "name": "Cashmere Scarf",
+      "description": "Lightweight 100% cashmere scarf",
+      "category": "Accessories",
+      "price": "45.00",
+      "stock": 60,
+      "sku": "LUXE-SCARF-003",
+      "barcode": "8901234567892",
+      "status": "active",
+      "variants": "Ivory,Navy,Burgundy",
+      "image": "https://cdn.example.com/products/cashmere-scarf.jpg"
+    },
+    {
+      "name": "Wool Blazer",
+      "description": "Tailored single-breasted blazer for office and evening",
+      "category": "Outerwear",
+      "price": "149.99",
+      "stock": 18,
+      "sku": "LUXE-BLAZER-004",
+      "barcode": "8901234567893",
+      "status": "active",
+      "variants": "36,38,40,42",
+      "image": "https://cdn.example.com/products/wool-blazer.jpg"
+    },
+    {
+      "name": "Linen Summer Shirt",
+      "description": "Breathable linen button-down",
+      "category": "Tops",
+      "price": "59.00",
+      "stock": 35,
+      "sku": "LUXE-SHIRT-005",
+      "status": "active",
+      "variants": "S,M,L,XL"
+    },
+    {
+      "name": "Satin Midi Skirt",
+      "description": "High-waist satin skirt with side slit",
+      "category": "Bottoms",
+      "price": "72.00",
+      "stock": 22,
+      "sku": "LUXE-SKIRT-006",
+      "status": "active"
+    },
+    {
+      "name": "Pearl Drop Earrings",
+      "description": "Sterling silver hooks with freshwater pearls",
+      "category": "Jewelry",
+      "price": "38.00",
+      "stock": 50,
+      "sku": "LUXE-EAR-007",
+      "status": "active",
+      "image": "https://cdn.example.com/products/pearl-earrings.jpg"
+    },
+    {
+      "name": "Velvet Evening Clutch",
+      "category": "Accessories",
+      "price": "55.00",
+      "stock": 15,
+      "sku": "LUXE-CLUTCH-008",
+      "status": "active"
+    },
+    {
+      "name": "Merino Turtleneck",
+      "description": "Fine-knit merino wool turtleneck",
+      "category": "Tops",
+      "price": "68.00",
+      "stock": 0,
+      "sku": "LUXE-TURTLE-009",
+      "status": "out_of_stock"
+    }
+  ]
+}

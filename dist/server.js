@@ -9,6 +9,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const dbConnect_1 = require("./config/dbConnect");
 const AuthRoute_1 = __importDefault(require("./routes/AuthRoute"));
 const storeRoute_1 = __importDefault(require("./routes/storeRoute"));
+const produtRoute_1 = __importDefault(require("./routes/produtRoute"));
 // Load environment variables
 dotenv_1.default.config();
 // Connect and verify database
@@ -28,6 +29,7 @@ app.get('/', (req, res) => {
 // app.get('/db-version', requestHandler);
 app.use(`/api/auth`, AuthRoute_1.default);
 app.use(`/api/store`, storeRoute_1.default);
+app.use(`/api/product`, produtRoute_1.default);
 // Error Handling Middleware for JSON parsing errors
 app.use((err, req, res, next) => {
     if (err instanceof SyntaxError && 'status' in err && err.status === 400 && 'body' in err) {
