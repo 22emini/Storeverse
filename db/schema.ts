@@ -1,4 +1,3 @@
-import { double } from 'drizzle-orm/mysql-core';
 import { pgTable, serial, text, varchar, timestamp, boolean, integer, unique } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
@@ -70,7 +69,7 @@ export const Region = pgTable('region',{
 
 export const Product = pgTable('product', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').references(() => users.id).notNull(),
+  storeId: integer('store_id').references(() => stores.id).notNull(),
   image: text('image'),
   name: varchar('name', { length: 255 }),
   description:text('description'),
@@ -84,3 +83,60 @@ export const Product = pgTable('product', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
+
+
+/** Warehouse / storage location (e.g. Main Warehouse). */
+export const warehouses = pgTable('inventoryStatus', {
+  id: serial('id').primaryKey(),
+  storeId: integer('store_id').references(() => stores.id).notNull(),
+  name: varchar('name', { length: 255 }).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+/** Stock level for a product at a specific warehouse. */
+export const inventory = pgTable(
+  'inventory',
+  {
+    id: serial('id').primaryKey(),
+    storeId: integer('store_id').references(() => stores.id).notNull(),
+    productId: integer('product_id').references(() => Product.id).notNull(),
+    warehouseId: integer('warehouse_id').references(() => warehouses.id).notNull(),
+    quantity: integer('quantity').default(0).notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => ({
+    productWarehouseUnique: unique('inventory_product_warehouse_unique').on(
+      table.productId,
+      table.warehouseId
+    ),
+  })
+);
+
+/** @deprecated Use `warehouses` — kept for backward compatibility. */
+export const inventoryStatus = warehouses;
+
+export const  customers = pgTable('customer',{
+  customerId:serial('custid').primaryKey(),
+  storeId: integer('store_id').references(() => stores.id).notNull(),
+  firstName:varchar('first_name',{length: 255}),
+  lastName:varchar('last_name',{length:255}),
+  email:varchar('email',{length:255}).unique(),
+  phone:varchar('phone',{length:255}),
+  status:varchar('status', {length:255}),
+  address:varchar('address',{length:255}),
+ preferedLanguage:varchar('preferedLanguage',{length:255}),
+ preferedCurrency:varchar('preferedCurrency',{length:255}),
+ tags:varchar('tags',{length:255}),
+ notes:varchar('notes',{length:255}),
+ orderCount:integer('orderCount' ),
+ totalSpent:integer('totalSpent' ),
+
+ //Market Consent
+ emailMarketing: boolean('email_marketing').default(false).notNull(),
+ smsMarketing: boolean('sms_marketing').default(false).notNull(),
+ createdAt: timestamp('created_at').defaultNow().notNull(),
+updatedAt: timestamp('updated_at').defaultNow().notNull(),
+
+})

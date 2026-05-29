@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Product = exports.Region = exports.StoreAnylytics = exports.Staff = exports.stores = exports.users = void 0;
+exports.customers = exports.inventoryStatus = exports.inventory = exports.warehouses = exports.Product = exports.Region = exports.StoreAnylytics = exports.Staff = exports.stores = exports.users = void 0;
 const pg_core_1 = require("drizzle-orm/pg-core");
 exports.users = (0, pg_core_1.pgTable)('users', {
     id: (0, pg_core_1.serial)('id').primaryKey(),
@@ -62,7 +62,7 @@ exports.Region = (0, pg_core_1.pgTable)('region', {
 });
 exports.Product = (0, pg_core_1.pgTable)('product', {
     id: (0, pg_core_1.serial)('id').primaryKey(),
-    userId: (0, pg_core_1.integer)('user_id').references(() => exports.users.id).notNull(),
+    storeId: (0, pg_core_1.integer)('store_id').references(() => exports.stores.id).notNull(),
     image: (0, pg_core_1.text)('image'),
     name: (0, pg_core_1.varchar)('name', { length: 255 }),
     description: (0, pg_core_1.text)('description'),
@@ -73,6 +73,46 @@ exports.Product = (0, pg_core_1.pgTable)('product', {
     barcode: (0, pg_core_1.varchar)('barcode', { length: 255 }),
     status: (0, pg_core_1.varchar)('status', { length: 255 }),
     variants: (0, pg_core_1.varchar)('variants', { length: 255 }),
+    createdAt: (0, pg_core_1.timestamp)('created_at').defaultNow().notNull(),
+    updatedAt: (0, pg_core_1.timestamp)('updated_at').defaultNow().notNull(),
+});
+/** Warehouse / storage location (e.g. Main Warehouse). */
+exports.warehouses = (0, pg_core_1.pgTable)('inventoryStatus', {
+    id: (0, pg_core_1.serial)('id').primaryKey(),
+    storeId: (0, pg_core_1.integer)('store_id').references(() => exports.stores.id).notNull(),
+    name: (0, pg_core_1.varchar)('name', { length: 255 }).notNull(),
+    createdAt: (0, pg_core_1.timestamp)('created_at').defaultNow().notNull(),
+    updatedAt: (0, pg_core_1.timestamp)('updated_at').defaultNow().notNull(),
+});
+/** Stock level for a product at a specific warehouse. */
+exports.inventory = (0, pg_core_1.pgTable)('inventory', {
+    id: (0, pg_core_1.serial)('id').primaryKey(),
+    storeId: (0, pg_core_1.integer)('store_id').references(() => exports.stores.id).notNull(),
+    productId: (0, pg_core_1.integer)('product_id').references(() => exports.Product.id).notNull(),
+    warehouseId: (0, pg_core_1.integer)('warehouse_id').references(() => exports.warehouses.id).notNull(),
+    quantity: (0, pg_core_1.integer)('quantity').default(0).notNull(),
+    createdAt: (0, pg_core_1.timestamp)('created_at').defaultNow().notNull(),
+    updatedAt: (0, pg_core_1.timestamp)('updated_at').defaultNow().notNull(),
+}, (table) => ({
+    productWarehouseUnique: (0, pg_core_1.unique)('inventory_product_warehouse_unique').on(table.productId, table.warehouseId),
+}));
+/** @deprecated Use `warehouses` — kept for backward compatibility. */
+exports.inventoryStatus = exports.warehouses;
+exports.customers = (0, pg_core_1.pgTable)('customer', {
+    customerId: (0, pg_core_1.serial)('custid').primaryKey(),
+    storeId: (0, pg_core_1.integer)('store_id').references(() => exports.stores.id).notNull(),
+    firstName: (0, pg_core_1.varchar)('first_name', { length: 255 }),
+    lastName: (0, pg_core_1.varchar)('last_name', { length: 255 }),
+    email: (0, pg_core_1.varchar)('email', { length: 255 }).unique(),
+    phone: (0, pg_core_1.varchar)('phone', { length: 255 }),
+    address: (0, pg_core_1.varchar)('address', { length: 255 }),
+    preferedLanguage: (0, pg_core_1.varchar)('preferedLanguage', { length: 255 }),
+    preferedCurrency: (0, pg_core_1.varchar)('preferedCurrency', { length: 255 }),
+    tags: (0, pg_core_1.varchar)('tags', { length: 255 }),
+    notes: (0, pg_core_1.varchar)('notes', { length: 255 }),
+    //Market Consent
+    emailMarketing: (0, pg_core_1.boolean)('email_marketing').default(false).notNull(),
+    smsMarketing: (0, pg_core_1.boolean)('sms_marketing').default(false).notNull(),
     createdAt: (0, pg_core_1.timestamp)('created_at').defaultNow().notNull(),
     updatedAt: (0, pg_core_1.timestamp)('updated_at').defaultNow().notNull(),
 });

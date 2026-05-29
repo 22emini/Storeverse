@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { db } from '../../config/dbConnect';
-import { Product, users } from '../../db/schema';
+import { Product, stores } from '../../db/schema';
 import { eq } from 'drizzle-orm';
 
 const PRODUCT_FIELDS = [
@@ -15,8 +15,6 @@ const PRODUCT_FIELDS = [
   'status',
   'variants',
 ] as const;
-
-type ProductField = (typeof PRODUCT_FIELDS)[number];
 
 const parseId = (raw: unknown): number | null => {
   const parsed = typeof raw === 'number' ? raw : parseInt(String(raw ?? ''), 10);
@@ -33,7 +31,7 @@ const resolveName = (row: Record<string, unknown>): string | null => {
 
 const mapRowToValues = (
   row: Record<string, unknown>,
-  userId: number
+  storeId: number
 ): Record<string, unknown> | { error: string; name?: never } => {
   const name = resolveName(row);
   if (!name) {
@@ -49,7 +47,7 @@ const mapRowToValues = (
     }
   }
 
-  const values: Record<string, unknown> = { userId, name };
+  const values: Record<string, unknown> = { storeId, name };
   if (stock !== undefined) values.stock = stock;
 
   for (const field of PRODUCT_FIELDS) {
@@ -63,25 +61,25 @@ const mapRowToValues = (
   return values;
 };
 
-const ensureUserExists = async (userId: number): Promise<boolean> => {
-  const result = await db.select({ id: users.id }).from(users).where(eq(users.id, userId)).limit(1);
+const ensureStoreExists = async (storeId: number): Promise<boolean> => {
+  const result = await db.select({ id: stores.id }).from(stores).where(eq(stores.id, storeId)).limit(1);
   return result.length > 0;
 };
 
 export const addProduct = async (req: Request, res: Response) => {
   try {
-    const { userId, ...row } = req.body;
-    const parsedUserId = parseId(userId);
+    const { storeId, ...row } = req.body;
+    const parsedStoreId = parseId(storeId);
 
-    if (parsedUserId === null) {
-      return res.status(400).json({ message: 'Valid userId is required' });
+    if (parsedStoreId === null) {
+      return res.status(400).json({ message: 'Valid storeId is required' });
     }
 
-    if (!(await ensureUserExists(parsedUserId))) {
-      return res.status(404).json({ message: 'User not found' });
+    if (!(await ensureStoreExists(parsedStoreId))) {
+      return res.status(404).json({ message: 'Store not found' });
     }
 
-    const mapped = mapRowToValues(row, parsedUserId);
+    const mapped = mapRowToValues(row, parsedStoreId);
     if ('error' in mapped) {
       return res.status(400).json({ message: mapped.error });
     }
@@ -109,20 +107,20 @@ export const bulkUploadProducts = async (req: Request, res: Response) => {
         payload = JSON.parse(text);
       } catch {
         return res.status(400).json({
-          message: 'Uploaded file must be valid JSON (array of products or { userId, products })',
+          message: 'Uploaded file must be valid JSON (array of products or { storeId, products })',
         });
       }
     }
 
-    const userId = parseId(payload.userId ?? req.body.userId);
+    const storeId = parseId(payload.storeId ?? req.body.storeId);
     const products: unknown[] = Array.isArray(payload)
       ? payload
       : Array.isArray(payload.products)
         ? payload.products
         : null;
 
-    if (userId === null) {
-      return res.status(400).json({ message: 'Valid userId is required' });
+    if (storeId === null) {
+      return res.status(400).json({ message: 'Valid storeId is required' });
     }
 
     if (!products || products.length === 0) {
@@ -131,8 +129,8 @@ export const bulkUploadProducts = async (req: Request, res: Response) => {
       });
     }
 
-    if (!(await ensureUserExists(userId))) {
-      return res.status(404).json({ message: 'User not found' });
+    if (!(await ensureStoreExists(storeId))) {
+      return res.status(404).json({ message: 'Store not found' });
     }
 
     const rows: (typeof Product.$inferInsert)[] = [];
@@ -143,7 +141,7 @@ export const bulkUploadProducts = async (req: Request, res: Response) => {
         errors.push({ index, message: 'Item must be an object' });
         return;
       }
-      const mapped = mapRowToValues(item as Record<string, unknown>, userId);
+      const mapped = mapRowToValues(item as Record<string, unknown>, storeId);
       if ('error' in mapped && typeof mapped.error === 'string') {
         errors.push({ index, message: mapped.error });
         return;
@@ -193,18 +191,18 @@ export const getProduct = async (req: Request, res: Response) => {
   }
 };
 
-export const getProductsByUser = async (req: Request, res: Response) => {
+export const getProductsByStore = async (req: Request, res: Response) => {
   try {
-    const userId = parseId(req.params.userId);
-    if (userId === null) {
-      return res.status(400).json({ message: 'Valid userId is required' });
+    const storeId = parseId(req.params.storeId);
+    if (storeId === null) {
+      return res.status(400).json({ message: 'Valid storeId is required' });
     }
 
-    if (!(await ensureUserExists(userId))) {
-      return res.status(404).json({ message: 'User not found' });
+    if (!(await ensureStoreExists(storeId))) {
+      return res.status(404).json({ message: 'Store not found' });
     }
 
-    const products = await db.select().from(Product).where(eq(Product.userId, userId));
+    const products = await db.select().from(Product).where(eq(Product.storeId, storeId));
 
     return res.status(200).json({
       message: 'Products fetched successfully',
@@ -212,7 +210,7 @@ export const getProductsByUser = async (req: Request, res: Response) => {
       products,
     });
   } catch (error: any) {
-    console.error('getProductsByUser error:', error);
+    console.error('getProductsByStore error:', error);
     return res.status(500).json({ message: 'Failed to fetch products', error: error.message });
   }
 };
@@ -275,3 +273,6 @@ export const updateProduct = async (req: Request, res: Response) => {
     return res.status(500).json({ message: 'Failed to update product', error: error.message });
   }
 };
+
+/** @deprecated Use getProductsByStore */
+export const getProductsByUser = getProductsByStore;

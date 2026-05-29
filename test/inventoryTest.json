@@ -1,0 +1,113 @@
+{
+  "_notes": {
+    "baseUrl": "http://localhost:5000",
+    "order": [
+      "1. Ensure store exists (POST /api/store/createStore) — note storeId",
+      "2. Add products for the store owner's userId (POST /api/product/add) — note productIds",
+      "3. Create warehouses (POST /api/inventory/warehouse)",
+      "4. Add inventory rows (POST /api/inventory)",
+      "5. GET /api/inventory/store/:storeId and /summary",
+      "6. PATCH /api/inventory/:id/adjust"
+    ],
+    "replaceIds": "Replace storeId, productId, warehouseId, and inventory id with values from your database responses."
+  },
+
+  "createWarehouse_main": {
+    "storeId": 1,
+    "name": "Main Warehouse"
+  },
+  "createWarehouse_secondary": {
+    "storeId": 1,
+    "name": "Secondary Warehouse"
+  },
+
+  "addProducts_forInventory": {
+    "_endpoint": "POST /api/product/add — run once per product; use same userId as store owner",
+    "wirelessHeadphones": {
+      "userId": 1,
+      "name": "Wireless Bluetooth Headphones",
+      "description": "Over-ear Bluetooth headphones with noise cancellation",
+      "category": "Electronics",
+      "price": "89.99",
+      "stock": 0,
+      "sku": "ELECT - 042",
+      "status": "active"
+    },
+    "cottonTShirt": {
+      "userId": 1,
+      "name": "Premium Cotton T-Shirt",
+      "description": "Soft premium cotton crew neck",
+      "category": "Fashion",
+      "price": "29.99",
+      "stock": 0,
+      "sku": "FASH - 001",
+      "status": "active"
+    },
+    "leatherWallet": {
+      "userId": 1,
+      "name": "Leather Wallet",
+      "description": "Genuine leather bifold wallet",
+      "category": "Accessories",
+      "price": "45.00",
+      "stock": 0,
+      "sku": "ACC - 042",
+      "status": "active"
+    }
+  },
+
+  "addInventoryItem_headphones_main": {
+    "storeId": 1,
+    "productId": 1,
+    "warehouseId": 1,
+    "quantity": 150
+  },
+  "addInventoryItem_tshirt_main": {
+    "storeId": 1,
+    "productId": 2,
+    "warehouseId": 1,
+    "quantity": 5
+  },
+  "addInventoryItem_wallet_main": {
+    "storeId": 1,
+    "productId": 3,
+    "warehouseId": 1,
+    "quantity": 30
+  },
+  "addInventoryItem_headphones_secondary_stockout": {
+    "storeId": 1,
+    "productId": 1,
+    "warehouseId": 2,
+    "quantity": 0
+  },
+
+  "adjustStock_setAbsolute": {
+    "quantity": 120
+  },
+  "adjustStock_relativeDecrease": {
+    "adjustment": -10
+  },
+  "adjustStock_relativeIncrease": {
+    "adjustment": 25
+  },
+
+  "getRoutes_noBody": {
+    "listWarehouses": "GET /api/inventory/warehouse/1",
+    "fullInventoryWithSummary": "GET /api/inventory/store/1",
+    "summaryOnly": "GET /api/inventory/store/1/summary"
+  },
+
+  "expectedSummaryAfterSeed": {
+    "_comment": "After adding the four rows above (150, 5, 30, 0)",
+    "totalStock": 185,
+    "inStock": 2,
+    "lowStock": 1,
+    "outOfStock": 1
+  },
+
+  "curlExamples": {
+    "createWarehouse": "curl -X POST http://localhost:5000/api/inventory/warehouse -H \"Content-Type: application/json\" -d \"{\\\"storeId\\\":1,\\\"name\\\":\\\"Main Warehouse\\\"}\"",
+    "addInventory": "curl -X POST http://localhost:5000/api/inventory -H \"Content-Type: application/json\" -d \"{\\\"storeId\\\":1,\\\"productId\\\":1,\\\"warehouseId\\\":1,\\\"quantity\\\":150}\"",
+    "getInventory": "curl http://localhost:5000/api/inventory/store/1",
+    "adjustStock": "curl -X PATCH http://localhost:5000/api/inventory/1/adjust -H \"Content-Type: application/json\" -d \"{\\\"quantity\\\":120}\""
+  }
+}

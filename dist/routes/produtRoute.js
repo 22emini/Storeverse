@@ -10,7 +10,7 @@ const router = express_1.default.Router();
 router.post('/add', productController_1.addProduct);
 router.post('/bulk', productController_1.bulkUploadProducts);
 router.post('/bulk/upload', upload_1.withBulkDataUpload, productController_1.bulkUploadProducts);
-router.get('/user/:userId', productController_1.getProductsByUser);
+router.get('/store/:storeId', productController_1.getProductsByStore);
 router.get('/:id', productController_1.getProduct);
 router.put('/:id', productController_1.updateProduct);
 exports.default = router;

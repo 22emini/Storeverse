@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.withImageUpload = exports.withBulkDataUpload = exports.bulkDataUpload = exports.uploadStoreImage = exports.imageUpload = void 0;
+exports.withImageUpload = exports.withCustomerImportUpload = exports.customerImportUpload = exports.withBulkDataUpload = exports.bulkDataUpload = exports.uploadStoreImage = exports.imageUpload = void 0;
 const multer_1 = __importDefault(require("multer"));
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 const imageFilter = (_req, file, cb) => {
@@ -50,6 +50,54 @@ const withBulkDataUpload = (req, res, next) => {
     });
 };
 exports.withBulkDataUpload = withBulkDataUpload;
+const CUSTOMER_IMPORT_EXTENSIONS = ['.json', '.csv', '.xlsx', '.xls', '.pdf'];
+const CUSTOMER_IMPORT_MIMES = [
+    'application/json',
+    'text/json',
+    'text/csv',
+    'text/plain',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/pdf',
+];
+const customerImportFilter = (_req, file, cb) => {
+    const name = file.originalname.toLowerCase();
+    const mime = file.mimetype.toLowerCase();
+    const extOk = CUSTOMER_IMPORT_EXTENSIONS.some((ext) => name.endsWith(ext));
+    const mimeOk = CUSTOMER_IMPORT_MIMES.includes(file.mimetype) ||
+        mime.includes('json') ||
+        mime.includes('csv') ||
+        mime.includes('spreadsheet') ||
+        mime.includes('excel') ||
+        mime === 'application/pdf' ||
+        mime === 'text/plain';
+    if (extOk || mimeOk) {
+        cb(null, true);
+    }
+    else {
+        cb(new Error('Customer import accepts JSON, CSV, Excel (.xlsx/.xls), or PDF only'));
+    }
+};
+exports.customerImportUpload = (0, multer_1.default)({
+    storage: multer_1.default.memoryStorage(),
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+    fileFilter: customerImportFilter,
+});
+const withCustomerImportUpload = (req, res, next) => {
+    exports.customerImportUpload.single('file')(req, res, (err) => {
+        if (err instanceof multer_1.default.MulterError) {
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(400).json({ message: 'Import file must be 10 MB or smaller' });
+            }
+            return res.status(400).json({ message: err.message });
+        }
+        if (err instanceof Error) {
+            return res.status(400).json({ message: err.message });
+        }
+        next();
+    });
+};
+exports.withCustomerImportUpload = withCustomerImportUpload;
 const withImageUpload = (req, res, next) => {
     exports.imageUpload.single('image')(req, res, (err) => {
         if (err instanceof multer_1.default.MulterError) {

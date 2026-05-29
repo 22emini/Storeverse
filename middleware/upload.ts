@@ -50,6 +50,58 @@ export const withBulkDataUpload = (req: Request, res: Response, next: NextFuncti
   });
 };
 
+const CUSTOMER_IMPORT_EXTENSIONS = ['.json', '.csv', '.xlsx', '.xls', '.pdf'];
+const CUSTOMER_IMPORT_MIMES = [
+  'application/json',
+  'text/json',
+  'text/csv',
+  'text/plain',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/pdf',
+];
+
+const customerImportFilter: multer.Options['fileFilter'] = (_req, file, cb) => {
+  const name = file.originalname.toLowerCase();
+  const mime = file.mimetype.toLowerCase();
+  const extOk = CUSTOMER_IMPORT_EXTENSIONS.some((ext) => name.endsWith(ext));
+  const mimeOk =
+    CUSTOMER_IMPORT_MIMES.includes(file.mimetype) ||
+    mime.includes('json') ||
+    mime.includes('csv') ||
+    mime.includes('spreadsheet') ||
+    mime.includes('excel') ||
+    mime === 'application/pdf' ||
+    mime === 'text/plain';
+
+  if (extOk || mimeOk) {
+    cb(null, true);
+  } else {
+    cb(new Error('Customer import accepts JSON, CSV, Excel (.xlsx/.xls), or PDF only'));
+  }
+};
+
+export const customerImportUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+  fileFilter: customerImportFilter,
+});
+
+export const withCustomerImportUpload = (req: Request, res: Response, next: NextFunction) => {
+  customerImportUpload.single('file')(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ message: 'Import file must be 10 MB or smaller' });
+      }
+      return res.status(400).json({ message: err.message });
+    }
+    if (err instanceof Error) {
+      return res.status(400).json({ message: err.message });
+    }
+    next();
+  });
+};
+
 export const withImageUpload = (req: Request, res: Response, next: NextFunction) => {
   imageUpload.single('image')(req, res, (err) => {
     if (err instanceof multer.MulterError) {

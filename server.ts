@@ -5,6 +5,8 @@ import { dbConnect } from './config/dbConnect';
 import AuthRoute from "./routes/AuthRoute"
 import StoreRoute from "./routes/storeRoute"
 import ProductRoute from "./routes/produtRoute"
+import InventoryRoute from "./routes/inventoryRoute"
+import CustomerRoute from "./routes/customerRoute"
 // Load environment variables
 dotenv.config();
 
@@ -31,6 +33,8 @@ app.get('/', (req: Request, res: Response) => {
 app.use(`/api/auth`, AuthRoute);
 app.use(`/api/store`, StoreRoute);
 app.use(`/api/product`,ProductRoute );
+app.use(`/api/inventory`, InventoryRoute);
+app.use('/api/customer', CustomerRoute);
 
 // Error Handling Middleware for JSON parsing errors
 app.use((err: any, req: Request, res: Response, next: NextFunction): any => {

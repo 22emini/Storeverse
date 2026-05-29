@@ -1,0 +1,3 @@
+firstName,lastName,email,phone,tags,preferedCurrency,preferedLanguage,emailMarketing,smsMarketing
+Jane,Doe,jane.doe@example.com,+15551234567,vip,USD,en,true,false
+Sam,Rivera,sam.rivera@example.com,+15559876543,newsletter,EUR,es,false,true

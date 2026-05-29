@@ -1,0 +1,73 @@
+{
+  "_notes": {
+    "baseUrl": "http://localhost:5000/api/customer",
+    "order": [
+      "1. Ensure store exists — note storeId",
+      "2. POST /add — single customer",
+      "3. GET /store/:storeId — list all",
+      "4. GET /:id — one customer (use customerId from response)",
+      "5. PUT /:id — edit",
+      "6. POST /import — bulk JSON body",
+      "7. POST /import/upload — multipart: file + storeId (JSON, CSV, Excel, PDF)",
+      "8. GET /store/:storeId/export?download=true — download file"
+    ],
+    "replaceIds": "Replace storeId and customer id values from your API responses."
+  },
+
+  "addCustomer": {
+    "storeId": 1,
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "email": "jane.doe@example.com",
+    "phone": "+15551234567",
+    "address": "123 Main St",
+    "tags": "vip",
+    "notes": "Met at trade show",
+    "preferedCurrency": "USD",
+    "preferedLanguage": "en",
+    "emailMarketing": true,
+    "smsMarketing": false
+  },
+
+  "importCustomers_body": {
+    "storeId": 1,
+    "customers": [
+      {
+        "firstName": "Sam",
+        "lastName": "Rivera",
+        "email": "sam.rivera@example.com",
+        "phone": "+15559876543",
+        "tags": "newsletter",
+        "preferedCurrency": "EUR",
+        "preferedLanguage": "es",
+        "emailMarketing": false,
+        "smsMarketing": true
+      },
+      {
+        "firstName": "Chris",
+        "lastName": "Lee",
+        "email": "chris.lee@example.com",
+        "emailMarketing": true,
+        "smsMarketing": true
+      }
+    ]
+  },
+
+  "updateCustomer": {
+    "firstName": "Jane",
+    "lastName": "Smith",
+    "tags": "vip,loyal",
+    "emailMarketing": false
+  },
+
+  "import_upload": {
+    "_endpoint": "POST /api/customer/import/upload",
+    "_contentType": "multipart/form-data",
+    "fields": {
+      "storeId": "1",
+      "file": "<customers.csv | customers.xlsx | customers.pdf | customers.json>"
+    }
+  },
+
+  "csv_header_example": "firstName,lastName,email,phone,tags,preferedCurrency,preferedLanguage,emailMarketing,smsMarketing"
+}

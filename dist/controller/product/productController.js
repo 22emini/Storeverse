@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateProduct = exports.getProductsByUser = exports.getProduct = exports.bulkUploadProducts = exports.addProduct = void 0;
+exports.getProductsByUser = exports.updateProduct = exports.getProductsByStore = exports.getProduct = exports.bulkUploadProducts = exports.addProduct = void 0;
 const dbConnect_1 = require("../../config/dbConnect");
 const schema_1 = require("../../db/schema");
 const drizzle_orm_1 = require("drizzle-orm");
@@ -27,7 +27,7 @@ const resolveName = (row) => {
     }
     return name.trim();
 };
-const mapRowToValues = (row, userId) => {
+const mapRowToValues = (row, storeId) => {
     const name = resolveName(row);
     if (!name) {
         return { error: 'Each product requires a name (or legacy field "product")' };
@@ -40,7 +40,7 @@ const mapRowToValues = (row, userId) => {
             return { error: `Invalid stock value for "${name}"` };
         }
     }
-    const values = { userId, name };
+    const values = { storeId, name };
     if (stock !== undefined)
         values.stock = stock;
     for (const field of PRODUCT_FIELDS) {
@@ -53,21 +53,21 @@ const mapRowToValues = (row, userId) => {
     }
     return values;
 };
-const ensureUserExists = async (userId) => {
-    const result = await dbConnect_1.db.select({ id: schema_1.users.id }).from(schema_1.users).where((0, drizzle_orm_1.eq)(schema_1.users.id, userId)).limit(1);
+const ensureStoreExists = async (storeId) => {
+    const result = await dbConnect_1.db.select({ id: schema_1.stores.id }).from(schema_1.stores).where((0, drizzle_orm_1.eq)(schema_1.stores.id, storeId)).limit(1);
     return result.length > 0;
 };
 const addProduct = async (req, res) => {
     try {
-        const { userId, ...row } = req.body;
-        const parsedUserId = parseId(userId);
-        if (parsedUserId === null) {
-            return res.status(400).json({ message: 'Valid userId is required' });
+        const { storeId, ...row } = req.body;
+        const parsedStoreId = parseId(storeId);
+        if (parsedStoreId === null) {
+            return res.status(400).json({ message: 'Valid storeId is required' });
         }
-        if (!(await ensureUserExists(parsedUserId))) {
-            return res.status(404).json({ message: 'User not found' });
+        if (!(await ensureStoreExists(parsedStoreId))) {
+            return res.status(404).json({ message: 'Store not found' });
         }
-        const mapped = mapRowToValues(row, parsedUserId);
+        const mapped = mapRowToValues(row, parsedStoreId);
         if ('error' in mapped) {
             return res.status(400).json({ message: mapped.error });
         }
@@ -94,26 +94,26 @@ const bulkUploadProducts = async (req, res) => {
             }
             catch {
                 return res.status(400).json({
-                    message: 'Uploaded file must be valid JSON (array of products or { userId, products })',
+                    message: 'Uploaded file must be valid JSON (array of products or { storeId, products })',
                 });
             }
         }
-        const userId = parseId(payload.userId ?? req.body.userId);
+        const storeId = parseId(payload.storeId ?? req.body.storeId);
         const products = Array.isArray(payload)
             ? payload
             : Array.isArray(payload.products)
                 ? payload.products
                 : null;
-        if (userId === null) {
-            return res.status(400).json({ message: 'Valid userId is required' });
+        if (storeId === null) {
+            return res.status(400).json({ message: 'Valid storeId is required' });
         }
         if (!products || products.length === 0) {
             return res.status(400).json({
                 message: 'Provide a non-empty products array in the body or upload a JSON file',
             });
         }
-        if (!(await ensureUserExists(userId))) {
-            return res.status(404).json({ message: 'User not found' });
+        if (!(await ensureStoreExists(storeId))) {
+            return res.status(404).json({ message: 'Store not found' });
         }
         const rows = [];
         const errors = [];
@@ -122,7 +122,7 @@ const bulkUploadProducts = async (req, res) => {
                 errors.push({ index, message: 'Item must be an object' });
                 return;
             }
-            const mapped = mapRowToValues(item, userId);
+            const mapped = mapRowToValues(item, storeId);
             if ('error' in mapped && typeof mapped.error === 'string') {
                 errors.push({ index, message: mapped.error });
                 return;
@@ -168,16 +168,16 @@ const getProduct = async (req, res) => {
     }
 };
 exports.getProduct = getProduct;
-const getProductsByUser = async (req, res) => {
+const getProductsByStore = async (req, res) => {
     try {
-        const userId = parseId(req.params.userId);
-        if (userId === null) {
-            return res.status(400).json({ message: 'Valid userId is required' });
+        const storeId = parseId(req.params.storeId);
+        if (storeId === null) {
+            return res.status(400).json({ message: 'Valid storeId is required' });
         }
-        if (!(await ensureUserExists(userId))) {
-            return res.status(404).json({ message: 'User not found' });
+        if (!(await ensureStoreExists(storeId))) {
+            return res.status(404).json({ message: 'Store not found' });
         }
-        const products = await dbConnect_1.db.select().from(schema_1.Product).where((0, drizzle_orm_1.eq)(schema_1.Product.userId, userId));
+        const products = await dbConnect_1.db.select().from(schema_1.Product).where((0, drizzle_orm_1.eq)(schema_1.Product.storeId, storeId));
         return res.status(200).json({
             message: 'Products fetched successfully',
             count: products.length,
@@ -185,11 +185,11 @@ const getProductsByUser = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('getProductsByUser error:', error);
+        console.error('getProductsByStore error:', error);
         return res.status(500).json({ message: 'Failed to fetch products', error: error.message });
     }
 };
-exports.getProductsByUser = getProductsByUser;
+exports.getProductsByStore = getProductsByStore;
 const updateProduct = async (req, res) => {
     try {
         const productId = parseId(req.params.id);
@@ -240,3 +240,5 @@ const updateProduct = async (req, res) => {
     }
 };
 exports.updateProduct = updateProduct;
+/** @deprecated Use getProductsByStore */
+exports.getProductsByUser = exports.getProductsByStore;
